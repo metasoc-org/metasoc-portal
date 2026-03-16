@@ -16,3 +16,10 @@ __pycache__/
 
 # Node (por si se agrega en futuro)
 node_modules/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
