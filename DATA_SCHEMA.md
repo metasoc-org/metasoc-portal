@@ -1,128 +1,123 @@
-# METASOC — Esquema de Datos para IA Local
+# METASOC SOC — Esquema de Datos para IA Local
 
-Este documento explica la estructura de `metas.json` para que la IA local (Ollama/OpenClaw) pueda registrar, actualizar y consultar datos sin errores.
-
----
-
-## Archivo: `site/data/metas.json`
-
-### Campos de `meta` (metadatos globales)
-
-```json
-"meta": {
-  "last_updated": "2025-03-20T00:00:00Z",  // ISO 8601, actualizar siempre
-  "organization": "Metasoc",
-  "total_victorias": 8,                     // contar metas con estado "victoria"
-  "total_en_batalla": 5,                    // contar metas con estado "en_batalla"
-  "total_pendientes": 3                     // contar metas con estado "pendiente"
-}
-```
+Guía para que Ollama/OpenClaw registre incidentes correctamente.
 
 ---
 
-### Campos de cada `meta`
+## Archivo: `site/data/incidents.json`
+
+### Campos de cada incidente
 
 | Campo | Tipo | Valores válidos | Requerido |
 |-------|------|-----------------|-----------|
-| `id` | string | "META-XXX" (número secuencial) | ✅ |
-| `titulo` | string | Texto libre, máx 80 chars | ✅ |
-| `descripcion` | string | Texto libre | ✅ |
-| `categoria` | string | `empresarial`, `organizacional`, `filosofica`, `tecnologica`, `financiera`, `personal` | ✅ |
-| `estado` | string | `victoria`, `en_batalla`, `pendiente`, `retirada` | ✅ |
-| `prioridad` | string | `critica`, `alta`, `media`, `baja` | ✅ |
-| `fecha_inicio` | string | "YYYY-MM-DD" | ✅ |
-| `fecha_limite` | string | "YYYY-MM-DD" | ✅ |
-| `fecha_victoria` | string\|null | "YYYY-MM-DD" o null si no completada | ✅ |
-| `progreso` | number | 0–100 (porcentaje) | ✅ |
-| `tacticas` | array | Lista de strings | ✅ |
-| `obstaculos` | array | Lista de strings | ✅ |
-| `cita_motivacion` | string | Cita + " — Autor" | ❌ |
-| `responsable` | string | Nombre del responsable | ✅ |
-| `legion` | string | Área/equipo responsable | ✅ |
-
-### Estados válidos y su significado
-
-- `victoria` → Meta completada exitosamente (progreso = 100)
-- `en_batalla` → Meta en progreso activo (progreso 1–99)
-- `pendiente` → Meta planificada pero no iniciada (progreso = 0)
-- `retirada` → Meta cancelada o abandonada
+| `id` | string | "INC-XXX" (secuencial, 3 dígitos) | ✅ |
+| `date` | string | "YYYY-MM-DD" | ✅ |
+| `country` | string | ISO 3166-1 alpha-2 (CO, MX, AR, BR, CL, PE...) | ✅ |
+| `country_name` | string | Nombre completo del país | ✅ |
+| `lat` | number | Latitud decimal del país/ciudad | ✅ |
+| `lng` | number | Longitud decimal del país/ciudad | ✅ |
+| `industry` | string | Ver tabla de industrias abajo | ✅ |
+| `taxonomy` | string | Ver taxonomía ENISA abajo | ✅ |
+| `severity` | string | `critica` `alta` `media` `baja` | ✅ |
+| `description` | string | Descripción breve, máx 150 chars | ✅ |
+| `resolved` | boolean | `true` o `false` | ✅ |
 
 ---
 
-### Campos de cada `reporte`
+### Taxonomía ENISA (campo `taxonomy`)
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `id` | string | "REP-XXX" secuencial |
-| `fecha` | string | "YYYY-MM-DD" |
-| `titulo` | string | Nombre del reporte |
-| `victorias_nuevas` | number | Metas completadas en este período |
-| `batallas_activas` | number | Metas activas al momento |
-| `resumen` | string | Texto narrativo del reporte |
-| `metas_ids` | array | Lista de IDs de metas incluidas |
-| `indice_moral` | number | 0–100, índice de motivación del equipo |
+| Valor | Descripción |
+|-------|-------------|
+| `ransomware` | Cifrado malicioso con extorsión |
+| `malware` | Software malicioso genérico (troyanos, wipers, spyware) |
+| `phishing` | Engaño por correo/web para robar credenciales |
+| `ddos` | Denegación de servicio distribuida |
+| `data_breach` | Exposición/robo de datos |
+| `web_attack` | Ataques a aplicaciones web (SQLi, XSS, defacement) |
+| `insider_threat` | Amenaza interna (empleado o contratista) |
+| `supply_chain` | Compromiso a través de proveedores o software de terceros |
+| `vulnerabilidad` | Explotación de CVE conocido o zero-day |
+| `desinformacion` | Campañas de desinformación o manipulación de información |
 
 ---
 
-## Instrucciones para la IA local (Ollama/OpenClaw)
+### Industrias (campo `industry`)
 
-### Para AGREGAR una nueva meta:
+`gobierno` | `educacion` | `salud` | `finanzas` | `energia` |
+`transporte` | `telecomunicaciones` | `manufactura` | `retail` | `otros`
 
-1. Leer el archivo `site/data/metas.json`
-2. Obtener el último ID del array `metas` y sumar 1
-3. Crear el objeto con todos los campos requeridos
-4. Agregar al final del array `metas`
-5. Actualizar `meta.last_updated` con la fecha y hora actual en ISO 8601
-6. Recalcular `total_victorias`, `total_en_batalla`, `total_pendientes`
-7. Guardar el archivo
+---
 
-### Para ACTUALIZAR el estado de una meta:
+### Coordenadas de referencia (capitales LATAM)
 
-1. Buscar la meta por `id`
-2. Cambiar `estado` al nuevo valor
-3. Si el estado es `victoria`: poner `progreso = 100` y `fecha_victoria = hoy`
-4. Actualizar `meta.last_updated`
-5. Recalcular totales en `meta`
-6. Guardar el archivo
+| País | `country` | `lat` | `lng` |
+|------|-----------|-------|-------|
+| Colombia | CO | 4.71 | -74.07 |
+| México | MX | 19.43 | -99.13 |
+| Brasil | BR | -15.78 | -47.93 |
+| Argentina | AR | -34.60 | -58.38 |
+| Chile | CL | -33.45 | -70.67 |
+| Perú | PE | -12.05 | -77.04 |
+| Ecuador | EC | -0.18 | -78.47 |
+| Bolivia | BO | -16.50 | -68.15 |
+| Paraguay | PY | -25.28 | -57.64 |
+| Uruguay | UY | -34.90 | -56.19 |
+| Venezuela | VE | 10.48 | -66.88 |
+| Costa Rica | CR | 9.93 | -84.08 |
+| Panamá | PA | 8.99 | -79.52 |
+| Guatemala | GT | 14.64 | -90.51 |
 
-### Para CREAR un nuevo reporte semanal:
+---
 
-1. Leer metas activas (`en_batalla`)
-2. Contar victorias de la semana (metas que cambiaron a `victoria`)
-3. Crear objeto en array `reportes` con datos calculados
-4. Actualizar `meta.last_updated`
-5. Guardar el archivo
+## Cómo agregar un incidente (instrucciones para IA local)
 
-### Prompt de ejemplo para Ollama:
+### Prompt para Ollama:
 
 ```
-Eres el asistente de datos de Metasoc. Lee el archivo metas.json y agrega la siguiente nueva meta:
-- Titulo: [TITULO]
-- Categoría: [CATEGORIA]
-- Responsable: [NOMBRE]
-- Prioridad: [PRIORIDAD]
-- Fecha límite: [FECHA]
-- Descripción: [DESCRIPCION]
+Eres el asistente de datos de Metasoc SOC. Lee el archivo incidents.json
+y agrega el siguiente nuevo incidente:
 
-Responde SOLO con el JSON completo y actualizado del archivo, sin explicaciones.
+- País: [PAÍS]
+- Industria: [INDUSTRIA]
+- Taxonomía ENISA: [TIPO]
+- Severidad: [critica|alta|media|baja]
+- Descripción: [DESCRIPCION]
+- Fecha: [YYYY-MM-DD]
+- ¿Resuelto?: [true|false]
+
+Usa las coordenadas de la tabla de referencia.
+El ID debe ser el siguiente número secuencial (INC-XXX).
+
+Responde SOLO con el JSON completo y actualizado del archivo incidents.json,
+sin explicaciones, sin bloques de código, solo el JSON puro.
+```
+
+### Pasos después de recibir el JSON:
+
+```bash
+# 1. Sobrescribir el archivo
+nano ~/metasoc-portal/site/data/incidents.json
+# (pegar el JSON generado por Ollama)
+
+# 2. Desplegar
+bash ~/scripts-metasoc/auto_deploy.sh
 ```
 
 ---
 
 ## Archivo: `site/data/costs.json`
 
-Ver estructura en el archivo. Los campos principales son:
-- `monthly_costs[].month` → "YYYY-MM"
-- `monthly_costs[].items[].category` → "infraestructura", "herramientas", "operaciones"
-- `monthly_costs[].items[].amount` → número decimal en USD
+Agregar nuevos meses al array `monthly_costs`:
 
----
-
-## Deploy automático
-
-Después de modificar cualquier JSON, ejecutar:
-```bash
-bash ~/scripts-metasoc/auto_deploy.sh
+```json
+{
+  "month": "2025-05",
+  "label": "May 2025",
+  "items": [
+    { "category": "infraestructura", "name": "Cloudflare Pages", "amount": 0, "notes": "Plan gratuito" },
+    { "category": "operaciones", "name": "Electricidad", "amount": 4.50, "notes": "Estimado" }
+  ]
+}
 ```
 
-El script hace commit y push a GitHub, Cloudflare Pages despliega en ~1 minuto.
+Categorías válidas: `infraestructura` | `herramientas` | `operaciones`
