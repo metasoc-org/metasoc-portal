@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Metasoc — Arcas del Imperio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    :root{--void:#08070a;--stone-dk:#100d0a;--stone:#1a1410;--stone-md:#2a2018;--stone-lt:#3d2e20;--red:#8b1a1a;--red2:#cc2200;--gold:#c8960c;--gold-br:#f0c040;--gold-dk:#7a5a08;--blue3:#4488cc;--parch-md:#d4b896;--parch-dk:#8b7355;--parch-dim:#5c4a2a;--green:#00aa55;--font-px:'Press Start 2P',monospace;--font-r:'VT323',monospace}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{image-rendering:pixelated}
+    body{background:var(--void);background-image:linear-gradient(rgba(200,150,12,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(200,150,12,.012) 1px,transparent 1px);background-size:8px 8px;color:var(--parch-md);font-family:var(--font-r);min-height:100vh}
+    @keyframes torch{0%,100%{opacity:1}33%{opacity:.88}66%{opacity:.96}}
+    @keyframes slide-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+    nav{position:sticky;top:0;z-index:300;background:var(--stone-dk);border-bottom:3px solid var(--gold-dk);box-shadow:0 2px 0 #000,0 3px 0 var(--gold)}
+    .nav-inner{display:flex;align-items:center;padding:0 1.5rem;max-width:1400px;margin:0 auto}
+    .nav-logo{display:flex;align-items:center;gap:.7rem;padding:.65rem 1.5rem .65rem 0;border-right:2px solid var(--gold-dk);text-decoration:none}
+    .logo-emblem{width:38px;height:38px;background:var(--red);box-shadow:0 0 0 2px var(--gold),2px 2px 0 #000;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+    .logo-text{font-family:var(--font-px);font-size:.7rem;color:var(--gold-br);letter-spacing:.1em;animation:torch 2s ease-in-out infinite;line-height:1}
+    .logo-sub{font-family:var(--font-r);font-size:.75rem;color:var(--parch-dim);letter-spacing:.18em}
+    .nav-links{display:flex;align-items:stretch;flex:1;list-style:none}
+    .nav-links li a{display:flex;align-items:center;gap:.35rem;padding:0 .9rem;height:56px;font-family:var(--font-px);font-size:.26rem;color:var(--parch-dk);text-decoration:none;letter-spacing:.05em;border-right:1px solid var(--stone-md);transition:all .1s;white-space:nowrap}
+    .nav-links li a:hover,.nav-links li a.active{color:var(--gold-br);background:rgba(200,150,12,.08)}
+    .nav-links li a span{font-size:.9rem}
+    @media(max-width:768px){.nav-links{display:none}}
+
+    .page-hero{background:linear-gradient(180deg,var(--gold-dk) 0%,var(--stone-dk) 100%);border-bottom:3px solid var(--gold-dk);padding:1.8rem 1.5rem 1.4rem;text-align:center}
+    .page-hero-title{font-family:var(--font-px);font-size:clamp(.6rem,2vw,1.1rem);color:var(--gold-br);letter-spacing:.15em;animation:torch 1.5s ease-in-out infinite;margin-bottom:.4rem;line-height:1.7}
+    .page-hero-sub{font-family:var(--font-r);font-size:clamp(1rem,2.5vw,1.4rem);color:var(--parch-md);letter-spacing:.2em}
+
+    .page{max-width:1200px;margin:0 auto;padding:1.5rem 1.5rem 4rem}
+
+    .sec-title{font-family:var(--font-px);font-size:.36rem;color:var(--gold-br);letter-spacing:.1em;margin:1.5rem 0 1rem;display:flex;align-items:center;gap:8px}
+    .sec-title::before{content:'';display:inline-block;width:10px;height:10px;background:var(--red2);box-shadow:0 0 8px var(--red2)}
+
+    /* MONTH SELECTOR */
+    .month-nav{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.2rem;align-items:center}
+    .mn-label{font-family:var(--font-px);font-size:.26rem;color:var(--gold);letter-spacing:.06em;margin-right:.3rem}
+    .mn-btn{background:var(--stone-lt);border:none;box-shadow:0 0 0 2px var(--gold-dk),2px 2px 0 #000;color:var(--parch-dim);padding:.3rem .7rem;font-family:var(--font-px);font-size:.24rem;letter-spacing:.04em;cursor:pointer;transition:all .1s}
+    .mn-btn:hover,.mn-btn.active{box-shadow:0 0 0 2px var(--gold),2px 2px 0 #000;color:var(--gold-br);background:var(--stone)}
+
+    /* STAT ROW */
+    .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--gold-dk);border:2px solid var(--gold-dk);box-shadow:2px 2px 0 #000;margin-bottom:1.4rem}
+    .stat-t{background:var(--stone);padding:.9rem 1.1rem;position:relative;animation:slide-up .4s ease forwards}
+    .stat-t::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--tc,var(--gold));box-shadow:0 0 10px var(--tc,var(--gold))}
+    .stat-icon{font-size:1.1rem;margin-bottom:.35rem;display:block}
+    .stat-lbl{font-family:var(--font-px);font-size:.23rem;color:var(--parch-dim);letter-spacing:.05em;line-height:2;margin-bottom:.3rem}
+    .stat-val{font-family:var(--font-r);font-size:2.4rem;color:var(--tc,var(--gold-br));line-height:1}
+    .stat-sub{font-family:var(--font-r);font-size:.85rem;color:var(--parch-dim);margin-top:.2rem}
+
+    /* GRID */
+    .dash{display:grid;grid-template-columns:1fr 380px;gap:1.2rem;margin-bottom:1.4rem}
+    @media(max-width:900px){.dash{grid-template-columns:1fr}}
+
+    /* PANEL */
+    .panel{background:var(--stone);box-shadow:0 0 0 2px var(--gold-dk),2px 2px 0 #000}
+    .p-hdr{padding:.65rem 1rem;border-bottom:2px solid var(--gold-dk);display:flex;align-items:center;justify-content:space-between}
+    .p-title{font-family:var(--font-px);font-size:.3rem;color:var(--gold-br);letter-spacing:.08em;display:flex;align-items:center;gap:6px}
+    .p-title::before{content:'';display:inline-block;width:8px;height:8px;background:var(--red2);box-shadow:0 0 6px var(--red2)}
+    .p-body{padding:1rem}
+    .chart-wrap{position:relative;height:240px}
+
+    /* COST TABLE */
+    .cost-table{width:100%;border-collapse:collapse}
+    .cost-table th{font-family:var(--font-px);font-size:.23rem;color:var(--gold);letter-spacing:.05em;padding:.5rem .7rem;background:var(--stone-md);border-bottom:2px solid var(--gold-dk);text-align:left}
+    .cost-table td{font-family:var(--font-r);font-size:1rem;color:var(--parch-md);padding:.5rem .7rem;border-bottom:1px solid rgba(122,90,8,.2);vertical-align:middle}
+    .cost-table tr:hover td{background:rgba(200,150,12,.04)}
+    .cost-table .total-row td{background:var(--stone-md);font-family:var(--font-px);font-size:.27rem;color:var(--gold-br);border-top:2px solid var(--gold-dk)}
+
+    .cat-badge{font-family:var(--font-r);font-size:.85rem;padding:0 .4rem}
+    .c-infra{box-shadow:0 0 0 2px var(--blue3);color:var(--blue3)}
+    .c-herra{box-shadow:0 0 0 2px var(--green);color:var(--green)}
+    .c-oper{box-shadow:0 0 0 2px var(--gold);color:var(--gold)}
+
+    /* SUMMARY PANEL */
+    .summary-item{padding:.7rem .9rem;border-bottom:1px solid rgba(122,90,8,.2);display:flex;justify-content:space-between;align-items:center}
+    .summary-item:last-child{border-bottom:none}
+    .si-label{font-family:var(--font-r);font-size:1rem;color:var(--parch-dk)}
+    .si-val{font-family:var(--font-r);font-size:1.2rem;color:var(--parch-md)}
+    .si-bar-wrap{width:100%;height:4px;background:var(--stone-lt);margin-top:.3rem}
+    .si-bar{height:100%;background:repeating-linear-gradient(90deg,var(--bc,var(--gold)) 0,var(--bc,var(--gold)) 4px,rgba(0,0,0,.3) 4px,rgba(0,0,0,.3) 6px)}
+
+    /* EXPORT */
+    .export-bar{display:flex;gap:.7rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+    .el{font-family:var(--font-px);font-size:.24rem;color:var(--parch-dim);letter-spacing:.04em}
+    .exp-btn{background:var(--stone-lt);border:none;box-shadow:0 0 0 2px var(--gold-dk),2px 2px 0 #000;color:var(--gold);padding:.32rem .75rem;font-family:var(--font-px);font-size:.24rem;cursor:pointer;transition:all .1s;letter-spacing:.04em}
+    .exp-btn:hover{box-shadow:0 0 0 2px var(--gold),2px 2px 0 #000;color:var(--gold-br);transform:translate(-1px,-1px)}
+
+    footer{border-top:3px solid var(--gold-dk);background:var(--stone-dk);padding:.75rem 1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+    .f-left{font-family:var(--font-r);font-size:.9rem;color:var(--parch-dim);display:flex;gap:2rem;flex-wrap:wrap}
+    .f-right{font-family:var(--font-px);font-size:.22rem;color:var(--parch-dim)}
+
+    @media(max-width:700px){.stat-row{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-emblem">🛡</div>
+      <div><div class="logo-text">METASOC</div><div class="logo-sub">META + SOCIETAS</div></div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html"><span>⚔</span> CAMPAÑA</a></li>
+      <li><a href="filosofia.html"><span>📜</span> FILOSOFÍA</a></li>
+      <li><a href="combate.html"><span>🗡</span> COMBATE</a></li>
+      <li><a href="reportes.html"><span>📋</span> REPORTES</a></li>
+      <li><a href="acerca.html"><span>🏛</span> SENADO</a></li>
+      <li><a href="costs.html" class="active"><span>🪙</span> ARCAS</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="page-hero-title">🪙 ARCAS DEL IMPERIO 🪙</div>
+  <div class="page-hero-sub">Quaestura — Gestión financiera del reino</div>
+</div>
+
+<div class="page">
+
+  <!-- MONTH NAV -->
+  <div class="sec-title">Seleccionar Período</div>
+  <div class="month-nav">
+    <span class="mn-label">MES:</span>
+    <div id="month-btns"></div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stat-row" id="stat-row">
+    <div class="stat-t" style="--tc:var(--gold-br)">
+      <span class="stat-icon">💰</span>
+      <div class="stat-lbl">GASTO TOTAL MES</div>
+      <div class="stat-val" id="s-total">$0</div>
+      <div class="stat-sub">USD este período</div>
+    </div>
+    <div class="stat-t" style="--tc:#4488cc">
+      <span class="stat-icon">🏰</span>
+      <div class="stat-lbl">INFRAESTRUCTURA</div>
+      <div class="stat-val" id="s-infra">$0</div>
+      <div class="stat-sub">servidores y hosting</div>
+    </div>
+    <div class="stat-t" style="--tc:var(--green)">
+      <span class="stat-icon">🛠</span>
+      <div class="stat-lbl">HERRAMIENTAS</div>
+      <div class="stat-val" id="s-herr">$0</div>
+      <div class="stat-sub">software y licencias</div>
+    </div>
+    <div class="stat-t" style="--tc:var(--gold)">
+      <span class="stat-icon">⚙</span>
+      <div class="stat-lbl">OPERACIONES</div>
+      <div class="stat-val" id="s-oper">$0</div>
+      <div class="stat-sub">costos operativos</div>
+    </div>
+  </div>
+
+  <!-- DASH GRID -->
+  <div class="dash">
+    <!-- CHART -->
+    <div class="panel">
+      <div class="p-hdr">
+        <div class="p-title">Evolución de Costos</div>
+        <span style="font-family:var(--font-r);font-size:.9rem;color:var(--parch-dim)">HISTÓRICO</span>
+      </div>
+      <div class="p-body"><div class="chart-wrap"><canvas id="chart-costs"></canvas></div></div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div style="display:flex;flex-direction:column;gap:1.1rem">
+      <div class="panel">
+        <div class="p-hdr"><div class="p-title">Distribución del Mes</div></div>
+        <div id="summary-panel"></div>
+      </div>
+      <div class="panel" style="padding:.9rem 1rem">
+        <div class="p-title" style="margin-bottom:.7rem">🏛 Nota del Quaestor</div>
+        <div style="font-family:var(--font-r);font-size:.95rem;color:var(--parch-dk);line-height:1.6;font-style:italic">"La frugalidad no es pobreza de medios, sino sabiduría de propósito." — Séneca<br><br>El Imperio Metasoc opera bajo el principio de máxima eficiencia. Cada denario gastado debe justificarse en valor generado para la campaña.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL TABLE -->
+  <div class="sec-title">Detalle de Gastos</div>
+  <div class="export-bar">
+    <span class="el">EXPORTAR:</span>
+    <button class="exp-btn" onclick="exportCSV()">📄 CSV</button>
+    <button class="exp-btn" onclick="window.print()">🖨 IMPRIMIR</button>
+  </div>
+  <div class="panel">
+    <table class="cost-table" id="cost-table">
+      <thead><tr><th>CATEGORÍA</th><th>SERVICIO / ITEM</th><th>MONTO (USD)</th><th>NOTAS</th></tr></thead>
+      <tbody id="cost-tbody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<footer>
+  <div class="f-left"><span>Metasoc v2.0</span><span id="f-upd">—</span><span>Quaestura Imperial</span></div>
+  <div class="f-right">SPQR — SENATUS POPULUSQUE ROMANUS METASOC</div>
+</footer>
+
+<script>
+const URL_C='./data/costs.json';
+let D=null, currentMonth=null;
+let costChart=null;
+
+const CJ={
+  plugins:{legend:{labels:{font:{family:"'VT323',monospace",size:14},color:'#d4b896',boxWidth:12}},tooltip:{backgroundColor:'#1a1410',borderColor:'#7a5a08',borderWidth:2,titleFont:{family:"'Press Start 2P',monospace",size:8},bodyFont:{family:"'VT323',monospace",size:14},titleColor:'#f0c040',bodyColor:'#d4b896'}},
+  scales:{x:{grid:{color:'rgba(122,90,8,.2)'},ticks:{font:{family:"'VT323',monospace",size:13},color:'#8b7355'}},y:{grid:{color:'rgba(122,90,8,.2)'},ticks:{font:{family:"'VT323',monospace",size:13},color:'#8b7355',callback:v=>'$'+v}}}
+};
+
+function fmt(n){return'$'+parseFloat(n).toFixed(2);}
+
+function getMonthLabel(m){const d=new Date(m+'-01');return d.toLocaleString('es',{month:'short',year:'2-digit'}).toUpperCase();}
+
+async function loadData(){
+  D=await(await fetch(URL_C)).json();
+  const months=D.monthly_costs||[];
+  if(!months.length) return;
+  currentMonth=months[months.length-1].month;
+  buildMonthNav(months);
+  renderAll();
+}
+
+function buildMonthNav(months){
+  const container=document.getElementById('month-btns');
+  container.style.display='flex'; container.style.gap='.5rem'; container.style.flexWrap='wrap';
+  container.innerHTML=months.map(m=>`<button class="mn-btn${m.month===currentMonth?' active':''}" data-m="${m.month}" onclick="selectMonth('${m.month}')">${getMonthLabel(m.month)}</button>`).join('');
+}
+
+function selectMonth(m){
+  currentMonth=m;
+  document.querySelectorAll('.mn-btn').forEach(b=>{b.classList.toggle('active',b.dataset.m===m);});
+  renderAll();
+}
+
+function renderAll(){
+  const mc=D.monthly_costs||[];
+  const month=mc.find(m=>m.month===currentMonth);
+  if(!month) return;
+  const items=month.items||[];
+
+  let total=0,infra=0,herr=0,oper=0;
+  items.forEach(i=>{
+    total+=parseFloat(i.amount)||0;
+    if(i.category==='infraestructura') infra+=parseFloat(i.amount)||0;
+    else if(i.category==='herramientas') herr+=parseFloat(i.amount)||0;
+    else if(i.category==='operaciones') oper+=parseFloat(i.amount)||0;
+  });
+
+  document.getElementById('s-total').textContent=fmt(total);
+  document.getElementById('s-infra').textContent=fmt(infra);
+  document.getElementById('s-herr').textContent=fmt(herr);
+  document.getElementById('s-oper').textContent=fmt(oper);
+
+  renderTable(items,total);
+  renderSummary(infra,herr,oper,total);
+  renderChart(mc);
+
+  const upd=month.label||currentMonth;
+  document.getElementById('f-upd').textContent='Período: '+upd;
+}
+
+function renderTable(items,total){
+  const catClass={infraestructura:'c-infra',herramientas:'c-herra',operaciones:'c-oper'};
+  document.getElementById('cost-tbody').innerHTML=
+    items.map(i=>`<tr><td><span class="cat-badge ${catClass[i.category]||''}">${i.category}</span></td><td>${i.name||i.service||'—'}</td><td style="font-family:var(--font-px);font-size:.28rem;color:var(--gold-br)">${fmt(i.amount)}</td><td style="color:var(--parch-dim)">${i.notes||'—'}</td></tr>`).join('')+
+    `<tr class="total-row"><td colspan="2">TOTAL DEL PERÍODO</td><td>${fmt(total)}</td><td>—</td></tr>`;
+}
+
+function renderSummary(infra,herr,oper,total){
+  const cats=[{label:'Infraestructura',val:infra,col:'#4488cc'},{label:'Herramientas',val:herr,col:'var(--green)'},{label:'Operaciones',val:oper,col:'var(--gold)'}];
+  document.getElementById('summary-panel').innerHTML=cats.map(c=>`
+    <div class="summary-item">
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between"><span class="si-label">${c.label}</span><span class="si-val">${fmt(c.val)}</span></div>
+        <div class="si-bar-wrap"><div class="si-bar" style="width:${total?c.val/total*100:0}%;--bc:${c.col}"></div></div>
+      </div>
+    </div>`).join('');
+}
+
+function renderChart(mc){
+  const labels=mc.map(m=>getMonthLabel(m.month));
+  const totals=mc.map(m=>(m.items||[]).reduce((a,i)=>a+(parseFloat(i.amount)||0),0));
+  const infraD=mc.map(m=>(m.items||[]).filter(i=>i.category==='infraestructura').reduce((a,i)=>a+(parseFloat(i.amount)||0),0));
+  const herrD=mc.map(m=>(m.items||[]).filter(i=>i.category==='herramientas').reduce((a,i)=>a+(parseFloat(i.amount)||0),0));
+  const operD=mc.map(m=>(m.items||[]).filter(i=>i.category==='operaciones').reduce((a,i)=>a+(parseFloat(i.amount)||0),0));
+
+  if(costChart) costChart.destroy();
+  costChart=new Chart(document.getElementById('chart-costs').getContext('2d'),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'Total',data:totals,borderColor:'#f0c040',backgroundColor:'rgba(240,192,64,.1)',borderWidth:2,pointRadius:4,tension:0},
+      {label:'Infraestructura',data:infraD,borderColor:'#4488cc',backgroundColor:'transparent',borderWidth:1,pointRadius:3,tension:0},
+      {label:'Herramientas',data:herrD,borderColor:'#00aa55',backgroundColor:'transparent',borderWidth:1,pointRadius:3,tension:0},
+      {label:'Operaciones',data:operD,borderColor:'#c8960c',backgroundColor:'transparent',borderWidth:1,pointRadius:3,tension:0}
+    ]},
+    options:{...CJ,responsive:true,maintainAspectRatio:false}
+  });
+}
+
+function exportCSV(){
+  if(!D) return;
+  const mc=D.monthly_costs||[];
+  const month=mc.find(m=>m.month===currentMonth);
+  if(!month) return;
+  const rows=[['Categoria','Servicio','Monto USD','Notas']];
+  (month.items||[]).forEach(i=>rows.push([i.category,'"'+(i.name||i.service||'')+'"',i.amount,'"'+(i.notes||'')+'"']));
+  const csv=rows.map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='metasoc-costos-'+currentMonth+'.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+window.addEventListener('load',loadData);
+</script>
+</body>
+</html>

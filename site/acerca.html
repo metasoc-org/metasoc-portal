@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Metasoc — El Senado / Acerca</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--void:#08070a;--stone-dk:#100d0a;--stone:#1a1410;--stone-md:#2a2018;--stone-lt:#3d2e20;--red:#8b1a1a;--red2:#cc2200;--gold:#c8960c;--gold-br:#f0c040;--gold-dk:#7a5a08;--blue3:#4488cc;--parch-md:#d4b896;--parch-dk:#8b7355;--parch-dim:#5c4a2a;--green:#00aa55;--font-px:'Press Start 2P',monospace;--font-r:'VT323',monospace}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{image-rendering:pixelated}
+    body{background:var(--void);background-image:linear-gradient(rgba(200,150,12,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(200,150,12,.012) 1px,transparent 1px);background-size:8px 8px;color:var(--parch-md);font-family:var(--font-r);min-height:100vh}
+    @keyframes torch{0%,100%{opacity:1}33%{opacity:.88}66%{opacity:.96}}
+
+    nav{position:sticky;top:0;z-index:300;background:var(--stone-dk);border-bottom:3px solid var(--gold-dk);box-shadow:0 2px 0 #000,0 3px 0 var(--gold)}
+    .nav-inner{display:flex;align-items:center;padding:0 1.5rem;max-width:1400px;margin:0 auto}
+    .nav-logo{display:flex;align-items:center;gap:.7rem;padding:.65rem 1.5rem .65rem 0;border-right:2px solid var(--gold-dk);text-decoration:none}
+    .logo-emblem{width:38px;height:38px;background:var(--red);box-shadow:0 0 0 2px var(--gold),2px 2px 0 #000;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+    .logo-text{font-family:var(--font-px);font-size:.7rem;color:var(--gold-br);letter-spacing:.1em;animation:torch 2s ease-in-out infinite;line-height:1}
+    .logo-sub{font-family:var(--font-r);font-size:.75rem;color:var(--parch-dim);letter-spacing:.18em}
+    .nav-links{display:flex;align-items:stretch;flex:1;list-style:none}
+    .nav-links li a{display:flex;align-items:center;gap:.35rem;padding:0 .9rem;height:56px;font-family:var(--font-px);font-size:.26rem;color:var(--parch-dk);text-decoration:none;letter-spacing:.05em;border-right:1px solid var(--stone-md);transition:all .1s;white-space:nowrap}
+    .nav-links li a:hover,.nav-links li a.active{color:var(--gold-br);background:rgba(200,150,12,.08)}
+    .nav-links li a span{font-size:.9rem}
+    @media(max-width:768px){.nav-links{display:none}}
+
+    .page-hero{background:linear-gradient(180deg,#2255aa 0%,var(--stone-dk) 100%);border-bottom:3px solid var(--gold-dk);padding:2rem 1.5rem 1.5rem;text-align:center}
+    .page-hero-title{font-family:var(--font-px);font-size:clamp(.6rem,2vw,1.1rem);color:var(--gold-br);letter-spacing:.15em;animation:torch 1.5s ease-in-out infinite;margin-bottom:.5rem;line-height:1.7}
+    .page-hero-sub{font-family:var(--font-r);font-size:clamp(1rem,2.5vw,1.4rem);color:var(--parch-md);letter-spacing:.2em}
+
+    .page{max-width:900px;margin:0 auto;padding:2rem 1.5rem 4rem}
+
+    .sec-title{font-family:var(--font-px);font-size:.38rem;color:var(--gold-br);letter-spacing:.1em;margin:1.8rem 0 1rem;display:flex;align-items:center;gap:8px}
+    .sec-title::before{content:'';display:inline-block;width:10px;height:10px;background:var(--red2);box-shadow:0 0 8px var(--red2)}
+
+    .panel{background:var(--stone);box-shadow:0 0 0 2px var(--gold-dk),2px 2px 0 #000;margin-bottom:1.2rem}
+    .p-hdr{padding:.7rem 1.1rem;border-bottom:2px solid var(--gold-dk);display:flex;align-items:center;gap:.6rem}
+    .p-icon{font-size:1.2rem}
+    .p-title{font-family:var(--font-px);font-size:.3rem;color:var(--gold-br);letter-spacing:.08em;line-height:1.6}
+    .p-body{padding:1.1rem;font-family:var(--font-r);font-size:1.05rem;color:var(--parch-dk);line-height:1.7}
+    .p-body strong{color:var(--gold-br);font-weight:normal}
+    .p-body em{color:var(--parch-md);font-style:normal}
+
+    .pillars{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-top:.5rem}
+    .pillar{background:var(--stone-md);box-shadow:0 0 0 2px var(--gold-dk);padding:.9rem;text-align:center}
+    .pil-icon{font-size:1.5rem;margin-bottom:.5rem}
+    .pil-name{font-family:var(--font-px);font-size:.28rem;color:var(--gold-br);letter-spacing:.07em;margin-bottom:.4rem;line-height:1.7}
+    .pil-desc{font-family:var(--font-r);font-size:.95rem;color:var(--parch-dk);line-height:1.4}
+
+    .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-top:.5rem}
+    .team-card{background:var(--stone-md);box-shadow:0 0 0 2px var(--gold-dk);padding:.9rem;text-align:center}
+    .tc-avatar{font-size:2rem;margin-bottom:.4rem}
+    .tc-name{font-family:var(--font-px);font-size:.28rem;color:var(--parch-md);letter-spacing:.06em;line-height:1.7;margin-bottom:.2rem}
+    .tc-role{font-family:var(--font-r);font-size:.9rem;color:var(--gold)}
+    .tc-desc{font-family:var(--font-r);font-size:.88rem;color:var(--parch-dim);margin-top:.3rem}
+
+    .timeline{display:flex;flex-direction:column;gap:0}
+    .tl-item{display:flex;gap:1rem;padding:.8rem 0;border-bottom:1px solid rgba(122,90,8,.2)}
+    .tl-date{font-family:var(--font-px);font-size:.25rem;color:var(--gold);letter-spacing:.05em;width:80px;flex-shrink:0;padding-top:.2rem;line-height:1.7}
+    .tl-dot{width:10px;height:10px;background:var(--red2);box-shadow:0 0 6px var(--red2);flex-shrink:0;margin-top:4px}
+    .tl-text{font-family:var(--font-r);font-size:1rem;color:var(--parch-md);line-height:1.5}
+    .tl-text strong{color:var(--gold-br);font-weight:normal}
+
+    footer{border-top:3px solid var(--gold-dk);background:var(--stone-dk);padding:.75rem 1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+    .f-left{font-family:var(--font-r);font-size:.9rem;color:var(--parch-dim);display:flex;gap:2rem}
+    .f-right{font-family:var(--font-px);font-size:.22rem;color:var(--parch-dim)}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-emblem">🛡</div>
+      <div><div class="logo-text">METASOC</div><div class="logo-sub">META + SOCIETAS</div></div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html"><span>⚔</span> CAMPAÑA</a></li>
+      <li><a href="filosofia.html"><span>📜</span> FILOSOFÍA</a></li>
+      <li><a href="combate.html"><span>🗡</span> COMBATE</a></li>
+      <li><a href="reportes.html"><span>📋</span> REPORTES</a></li>
+      <li><a href="acerca.html" class="active"><span>🏛</span> SENADO</a></li>
+      <li><a href="costs.html"><span>🪙</span> ARCAS</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="page-hero-title">🏛 SENATUS METASOC 🏛</div>
+  <div class="page-hero-sub">Historia, misión y filosofía del Imperio</div>
+</div>
+
+<div class="page">
+
+  <!-- MISSION -->
+  <div class="sec-title">Missio — Nuestra Misión</div>
+  <div class="panel">
+    <div class="p-hdr"><div class="p-icon">⚔</div><div class="p-title">¿Qué es Metasoc?</div></div>
+    <div class="p-body">
+      <strong>Metasoc</strong> nace de la unión de dos grandes tradiciones humanas: la <em>filosofía griega</em> (μετά — "más allá", "trascender") y la <em>disciplina militar romana</em> (el arte de la conquista organizada). Somos una plataforma para <strong>conquistar metas personales y empresariales</strong> aplicando la misma metodología que llevó a Roma a dominar el mundo conocido.<br><br>
+      No se trata de motivación vacía. Se trata de <strong>estrategia, disciplina y filosofía aplicada</strong>. Cada meta es una campaña. Cada obstáculo, un enemigo a estudiar. Cada victoria, una lección para la siguiente batalla.
+    </div>
+  </div>
+
+  <!-- PILLARS -->
+  <div class="sec-title">Columnas del Imperio</div>
+  <div class="panel">
+    <div class="p-hdr"><div class="p-icon">🏛</div><div class="p-title">Nuestros Pilares Filosóficos</div></div>
+    <div class="p-body">
+      <div class="pillars">
+        <div class="pillar"><div class="pil-icon">⚔</div><div class="pil-name">CONQUISTA</div><div class="pil-desc">Como César: define el objetivo, moviliza los recursos, actúa sin dudar.</div></div>
+        <div class="pillar"><div class="pil-icon">📜</div><div class="pil-name">FILOSOFÍA</div><div class="pil-desc">Como Marco Aurelio: reflexiona cada noche sobre tus acciones y motivos.</div></div>
+        <div class="pillar"><div class="pil-icon">🛡</div><div class="pil-name">DISCIPLINA</div><div class="pil-desc">Como la Legión: la constancia diaria vence al talento esporádico.</div></div>
+        <div class="pillar"><div class="pil-icon">🤝</div><div class="pil-name">SOCIETAS</div><div class="pil-desc">Como el Senado: las alianzas estratégicas multiplican el poder individual.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="sec-title">Historia — Annales Metasoc</div>
+  <div class="panel">
+    <div class="p-hdr"><div class="p-icon">📅</div><div class="p-title">Crónica del Imperio</div></div>
+    <div class="p-body">
+      <div class="timeline">
+        <div class="tl-item"><div class="tl-date">ENE 2025</div><div class="tl-dot"></div><div class="tl-text"><strong>Fundación del Imperio.</strong> La idea nace de combinar filosofía estoica con gestión de metas empresariales.</div></div>
+        <div class="tl-item"><div class="tl-date">FEB 2025</div><div class="tl-dot"></div><div class="tl-text"><strong>Primera Campaña.</strong> Las primeras metas son registradas. El sistema de tracking toma forma.</div></div>
+        <div class="tl-item"><div class="tl-date">MAR 2025</div><div class="tl-dot"></div><div class="tl-text"><strong>Lanzamiento del Portal.</strong> Metasoc v2.0 se despliega en Cloudflare Pages. El Imperio es visible para el mundo.</div></div>
+        <div class="tl-item"><div class="tl-date">ABR 2025</div><div class="tl-dot"></div><div class="tl-text"><strong>Expansión.</strong> Integración con IA local (Ollama) para generación automática de reportes y registro de metas.</div></div>
+        <div class="tl-item"><div class="tl-date">FUTURO</div><div class="tl-dot" style="background:var(--gold-dk);box-shadow:none"></div><div class="tl-text" style="color:var(--parch-dim)"><strong>La conquista continúa...</strong> Nuevas funcionalidades, alianzas y territorios por explorar.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEAM -->
+  <div class="sec-title">El Senado — Legatus Principis</div>
+  <div class="panel">
+    <div class="p-hdr"><div class="p-icon">👥</div><div class="p-title">Los Legati del Imperio</div></div>
+    <div class="p-body">
+      <div class="team-grid">
+        <div class="team-card"><div class="tc-avatar">🛡</div><div class="tc-name">LEGATUS PRIMA</div><div class="tc-role">Fundador & Strategos</div><div class="tc-desc">Visionario del Imperio. Define la dirección estratégica.</div></div>
+        <div class="team-card"><div class="tc-avatar">⚔</div><div class="tc-name">CENTURIÓN OPS</div><div class="tc-role">Jefe de Operaciones</div><div class="tc-desc">Mantiene la disciplina y el orden de las legiones.</div></div>
+        <div class="team-card"><div class="tc-avatar">📜</div><div class="tc-name">PHILOSOPHUS</div><div class="tc-role">Asesor Filosófico</div><div class="tc-desc">Guarda la sabiduría estoica y griega del Imperio.</div></div>
+        <div class="team-card"><div class="tc-avatar">🔧</div><div class="tc-name">TECHNO LEGATUS</div><div class="tc-role">Arquitecto Digital</div><div class="tc-desc">Construye las catapultas tecnológicas del Imperio.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TECH -->
+  <div class="sec-title">Arsenal Tecnológico</div>
+  <div class="panel">
+    <div class="p-hdr"><div class="p-icon">⚙</div><div class="p-title">Infraestructura del Imperio</div></div>
+    <div class="p-body">
+      El Imperio Metasoc opera con una filosofía de <strong>máxima eficiencia y mínimo costo</strong> — como la Legión Romana que conquistó el mundo con disciplina más que con riqueza:<br><br>
+      <strong>🏰 Frontend:</strong> HTML + CSS + JavaScript puro — sin frameworks innecesarios<br>
+      <strong>🗺 Deploy:</strong> Cloudflare Pages — sitio estático, deploy automático desde GitHub<br>
+      <strong>🤖 IA Local:</strong> Ollama + OpenClaw — modelos locales para generar reportes sin costo<br>
+      <strong>📊 Datos:</strong> JSON plano — simple, versionable, editable por humanos y máquinas<br>
+      <strong>🔄 Automatización:</strong> Cron job — deploy cada hora sin intervención manual<br>
+      <strong>💰 Costo mensual:</strong> &lt; $15 USD — el Imperio romano nunca fue costoso en lo esencial
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="f-left"><span>Metasoc v2.0</span><span>El Imperio crece un commit a la vez</span></div>
+  <div class="f-right">SPQR — SENATUS POPULUSQUE ROMANUS METASOC</div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Metasoc — Simulador de Combate Romano</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--void:#08070a;--stone-dk:#100d0a;--stone:#1a1410;--stone-md:#2a2018;--stone-lt:#3d2e20;--red:#8b1a1a;--red2:#cc2200;--red3:#ff4422;--gold:#c8960c;--gold-br:#f0c040;--gold-dk:#7a5a08;--blue3:#4488cc;--parch-md:#d4b896;--parch-dk:#8b7355;--parch-dim:#5c4a2a;--green:#00aa55;--font-px:'Press Start 2P',monospace;--font-r:'VT323',monospace}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{image-rendering:pixelated}
+    body{background:var(--void);background-image:linear-gradient(rgba(200,150,12,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(200,150,12,.012) 1px,transparent 1px);background-size:8px 8px;color:var(--parch-md);font-family:var(--font-r);min-height:100vh}
+    @keyframes torch{0%,100%{opacity:1}33%{opacity:.88}66%{opacity:.96}}
+    @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+    @keyframes flash{0%,100%{opacity:1}50%{opacity:.2}}
+    @keyframes slide-in{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:translateX(0)}}
+
+    nav{position:sticky;top:0;z-index:300;background:var(--stone-dk);border-bottom:3px solid var(--gold-dk);box-shadow:0 2px 0 #000,0 3px 0 var(--gold)}
+    .nav-inner{display:flex;align-items:center;padding:0 1.5rem;max-width:1400px;margin:0 auto}
+    .nav-logo{display:flex;align-items:center;gap:.7rem;padding:.65rem 1.5rem .65rem 0;border-right:2px solid var(--gold-dk);text-decoration:none}
+    .logo-emblem{width:38px;height:38px;background:var(--red);box-shadow:0 0 0 2px var(--gold),2px 2px 0 #000;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+    .logo-text{font-family:var(--font-px);font-size:.7rem;color:var(--gold-br);letter-spacing:.1em;animation:torch 2s ease-in-out infinite;line-height:1}
+    .logo-sub{font-family:var(--font-r);font-size:.75rem;color:var(--parch-dim);letter-spacing:.18em}
+    .nav-links{display:flex;align-items:stretch;flex:1;list-style:none}
+    .nav-links li a{display:flex;align-items:center;gap:.35rem;padding:0 .9rem;height:56px;font-family:var(--font-px);font-size:.26rem;color:var(--parch-dk);text-decoration:none;letter-spacing:.05em;border-right:1px solid var(--stone-md);transition:all .1s;white-space:nowrap}
+    .nav-links li a:hover,.nav-links li a.active{color:var(--gold-br);background:rgba(200,150,12,.08)}
+    .nav-links li a span{font-size:.9rem}
+    @media(max-width:768px){.nav-links{display:none}}
+
+    .page-hero{background:linear-gradient(180deg,var(--red) 0%,var(--stone-dk) 100%);border-bottom:3px solid var(--gold-dk);padding:1.8rem 1.5rem 1.4rem;text-align:center}
+    .page-hero-title{font-family:var(--font-px);font-size:clamp(.6rem,2vw,1.1rem);color:var(--gold-br);letter-spacing:.15em;animation:torch 1.5s ease-in-out infinite;margin-bottom:.4rem;line-height:1.7}
+    .page-hero-sub{font-family:var(--font-r);font-size:clamp(1rem,2.5vw,1.4rem);color:var(--parch-md);letter-spacing:.2em}
+
+    .page{max-width:900px;margin:0 auto;padding:2rem 1.5rem 4rem}
+
+    /* ARENA */
+    .arena{background:var(--stone);box-shadow:0 0 0 3px var(--gold-dk),4px 4px 0 #000;margin-bottom:1.5rem;overflow:hidden}
+
+    .arena-stage{display:flex;align-items:center;justify-content:space-around;padding:2rem;background:linear-gradient(180deg,var(--stone-md) 0%,var(--stone) 100%);border-bottom:2px solid var(--gold-dk);min-height:200px;position:relative}
+
+    .arena-stage::before{content:'COLOSSEUM';position:absolute;top:.5rem;left:50%;transform:translateX(-50%);font-family:var(--font-px);font-size:.25rem;color:var(--parch-dim);letter-spacing:.15em}
+
+    .fighter{display:flex;flex-direction:column;align-items:center;gap:.8rem;flex:1}
+
+    .fighter-sprite{font-size:4rem;line-height:1;transition:transform .3s}
+
+    .fighter.attacking .fighter-sprite{animation:shake .3s ease}
+    .fighter.hit .fighter-sprite{animation:flash .3s ease}
+
+    .fighter-name{font-family:var(--font-px);font-size:.35rem;color:var(--gold-br);letter-spacing:.08em;line-height:1.6;text-align:center}
+    .fighter-class{font-family:var(--font-r);font-size:.9rem;color:var(--parch-dk)}
+
+    .hp-container{width:100%;max-width:200px}
+    .hp-label{display:flex;justify-content:space-between;font-family:var(--font-px);font-size:.25rem;color:var(--parch-dim);margin-bottom:.3rem;letter-spacing:.05em}
+    .hp-bar{height:12px;background:var(--stone-lt);box-shadow:inset 2px 2px 0 #000;position:relative}
+    .hp-fill{position:absolute;top:0;left:0;bottom:0;transition:width .5s ease;background:repeating-linear-gradient(90deg,var(--hc,var(--green)) 0,var(--hc,var(--green)) 5px,rgba(0,0,0,.25) 5px,rgba(0,0,0,.25) 7px)}
+
+    .vs-badge{font-family:var(--font-px);font-size:.8rem;color:var(--gold-br);text-shadow:0 0 10px var(--gold);animation:torch 1s ease-in-out infinite;flex-shrink:0}
+
+    /* BATTLE LOG */
+    .battle-log{height:160px;overflow-y:auto;padding:.8rem 1rem;background:var(--stone-dk);border-top:2px solid var(--gold-dk)}
+    .battle-log::-webkit-scrollbar{width:6px}
+    .battle-log::-webkit-scrollbar-track{background:var(--void)}
+    .battle-log::-webkit-scrollbar-thumb{background:var(--gold-dk)}
+    .log-entry{font-family:var(--font-r);font-size:1.05rem;color:var(--parch-md);margin-bottom:.3rem;padding:.2rem 0;border-bottom:1px solid rgba(122,90,8,.15);animation:slide-in .3s ease forwards;line-height:1.4}
+    .log-entry.victory{color:var(--green)}
+    .log-entry.defeat{color:var(--red3)}
+    .log-entry.system{color:var(--gold);font-family:var(--font-px);font-size:.3rem;line-height:1.7}
+
+    /* CONTROLS */
+    .arena-controls{padding:1.2rem;border-top:2px solid var(--gold-dk);background:var(--stone-md)}
+    .controls-title{font-family:var(--font-px);font-size:.3rem;color:var(--gold);letter-spacing:.08em;margin-bottom:.9rem}
+    .strategies{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.7rem;margin-bottom:1rem}
+    .strat-btn{background:var(--stone-lt);border:none;box-shadow:0 0 0 2px var(--gold-dk),2px 2px 0 #000;padding:.7rem .8rem;cursor:pointer;transition:all .1s;text-align:left}
+    .strat-btn:hover:not(:disabled){box-shadow:0 0 0 2px var(--gold),2px 2px 0 #000;transform:translate(-1px,-1px)}
+    .strat-btn:active:not(:disabled){transform:translate(1px,1px)}
+    .strat-btn:disabled{opacity:.4;cursor:not-allowed}
+    .strat-icon{font-size:1.3rem;display:block;margin-bottom:.4rem}
+    .strat-name{font-family:var(--font-px);font-size:.26rem;color:var(--gold-br);letter-spacing:.06em;line-height:1.7;display:block;margin-bottom:.2rem}
+    .strat-desc{font-family:var(--font-r);font-size:.85rem;color:var(--parch-dk)}
+
+    .action-row{display:flex;gap:.7rem;flex-wrap:wrap}
+    .px-btn{background:var(--stone-lt);border:none;box-shadow:0 0 0 2px var(--gold-dk),2px 2px 0 #000;color:var(--parch-dim);padding:.45rem 1.1rem;font-family:var(--font-px);font-size:.28rem;letter-spacing:.06em;cursor:pointer;transition:all .1s}
+    .px-btn:hover{box-shadow:0 0 0 2px var(--gold),2px 2px 0 #000;color:var(--gold-br);transform:translate(-1px,-1px)}
+    .px-btn.primary{box-shadow:0 0 0 2px var(--red2),2px 2px 0 #000;color:var(--red3)}
+    .px-btn.primary:hover{box-shadow:0 0 0 2px var(--red3),2px 2px 0 #000}
+    .px-btn.success{box-shadow:0 0 0 2px var(--green),2px 2px 0 #000;color:var(--green)}
+
+    /* OBSTACLE SETUP */
+    .setup-panel{background:var(--stone);box-shadow:0 0 0 2px var(--gold-dk),2px 2px 0 #000;padding:1.2rem;margin-bottom:1.5rem}
+    .setup-title{font-family:var(--font-px);font-size:.35rem;color:var(--gold-br);letter-spacing:.1em;margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+    .setup-title::before{content:'';display:inline-block;width:10px;height:10px;background:var(--red2);box-shadow:0 0 8px var(--red2)}
+    .obstacles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.8rem}
+    .obstacle-card{background:var(--stone-md);box-shadow:0 0 0 2px var(--gold-dk);padding:.9rem;cursor:pointer;transition:all .1s;border:2px solid transparent}
+    .obstacle-card:hover{box-shadow:0 0 0 2px var(--gold)}
+    .obstacle-card.selected{border-color:var(--red2);box-shadow:0 0 0 2px var(--red2);background:rgba(139,26,26,.2)}
+    .ob-icon{font-size:1.5rem;margin-bottom:.4rem}
+    .ob-name{font-family:var(--font-px);font-size:.28rem;color:var(--parch-md);letter-spacing:.06em;line-height:1.7;margin-bottom:.3rem}
+    .ob-desc{font-family:var(--font-r);font-size:.9rem;color:var(--parch-dk)}
+    .ob-hp{font-family:var(--font-r);font-size:.85rem;color:var(--red3);margin-top:.3rem}
+
+    footer{border-top:3px solid var(--gold-dk);background:var(--stone-dk);padding:.75rem 1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+    .f-left{font-family:var(--font-r);font-size:.9rem;color:var(--parch-dim);display:flex;gap:2rem}
+    .f-right{font-family:var(--font-px);font-size:.22rem;color:var(--parch-dim)}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-emblem">🛡</div>
+      <div><div class="logo-text">METASOC</div><div class="logo-sub">META + SOCIETAS</div></div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html"><span>⚔</span> CAMPAÑA</a></li>
+      <li><a href="filosofia.html"><span>📜</span> FILOSOFÍA</a></li>
+      <li><a href="combate.html" class="active"><span>🗡</span> COMBATE</a></li>
+      <li><a href="reportes.html"><span>📋</span> REPORTES</a></li>
+      <li><a href="acerca.html"><span>🏛</span> SENADO</a></li>
+      <li><a href="costs.html"><span>🪙</span> ARCAS</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="page-hero-title">⚔ ARENA PHILOSOPHICA ⚔</div>
+  <div class="page-hero-sub">Enfrenta tus obstáculos con estrategia romana</div>
+</div>
+
+<div class="page">
+
+  <!-- OBSTACLE SETUP -->
+  <div class="setup-panel" id="setup-panel">
+    <div class="setup-title">Elige tu Obstáculo Filosófico</div>
+    <div class="obstacles-grid" id="obstacles-grid"></div>
+    <div style="margin-top:1.2rem">
+      <button class="px-btn primary" onclick="startBattle()" id="start-btn">⚔ ENTRAR AL COLOSSEUM</button>
+    </div>
+  </div>
+
+  <!-- ARENA -->
+  <div class="arena" id="arena" style="display:none">
+    <div class="arena-stage">
+      <!-- LEGIONARIO -->
+      <div class="fighter" id="fighter-player">
+        <div class="fighter-sprite" id="player-sprite">🛡</div>
+        <div class="fighter-name">LEGIONARIO<br>ROMANO</div>
+        <div class="fighter-class" id="player-class">—</div>
+        <div class="hp-container">
+          <div class="hp-label"><span>VIRTUS</span><span id="player-hp-num">100/100</span></div>
+          <div class="hp-bar"><div class="hp-fill" id="player-hp-bar" style="width:100%;--hc:var(--green)"></div></div>
+        </div>
+      </div>
+
+      <div class="vs-badge">VS</div>
+
+      <!-- ENEMY -->
+      <div class="fighter" id="fighter-enemy">
+        <div class="fighter-sprite" id="enemy-sprite">💀</div>
+        <div class="fighter-name" id="enemy-name">—</div>
+        <div class="fighter-class" id="enemy-class">—</div>
+        <div class="hp-container">
+          <div class="hp-label"><span>FORTITUDO</span><span id="enemy-hp-num">—</span></div>
+          <div class="hp-bar"><div class="hp-fill" id="enemy-hp-bar" style="width:100%;--hc:var(--red2)"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="battle-log" id="battle-log"></div>
+
+    <div class="arena-controls">
+      <div class="controls-title">⚔ ELIGE TU ESTRATEGIA ROMANA</div>
+      <div class="strategies" id="strategies-grid"></div>
+      <div class="action-row">
+        <button class="px-btn primary" onclick="autoResolve()" id="auto-btn">⚡ RESOLVER AUTO</button>
+        <button class="px-btn" onclick="resetBattle()">↺ NUEVA BATALLA</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="f-left"><span>Metasoc v2.0</span><span>Arena Philosophica — Combate estratégico romano</span></div>
+  <div class="f-right">SPQR — SENATUS POPULUSQUE ROMANUS METASOC</div>
+</footer>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────
+const OBSTACLES=[
+  {id:'procrastination',icon:'🦥',name:'PROCRASTINACIÓN',desc:'El enemigo más temido de los legionarios modernos',hp:80,atk:15,weak:'disciplina'},
+  {id:'fear',icon:'👻',name:'MIEDO AL FRACASO',desc:'La sombra que paraliza hasta al más valiente',hp:70,atk:20,weak:'fortaleza'},
+  {id:'distraction',icon:'🌀',name:'DISTRACCIÓN DIGITAL',desc:'Las arenas modernas que roban tiempo y foco',hp:60,atk:10,weak:'concentracion'},
+  {id:'perfectionism',icon:'⚡',name:'PERFECCIONISMO',desc:'La trampa filosófica que impide completar misiones',hp:90,atk:12,weak:'pragmatismo'},
+  {id:'doubt',icon:'🌫',name:'DUDA EXISTENCIAL',desc:'La niebla de guerra interior del estratega',hp:75,atk:18,weak:'autoconocimiento'},
+  {id:'chaos',icon:'🔥',name:'CAOS ORGANIZACIONAL',desc:'El desorden que destruye legiones enteras',hp:100,atk:8,weak:'estructura'},
+];
+
+const STRATEGIES=[
+  {id:'disciplina',icon:'⚔',name:'DISCIPLINA ROMANA',desc:'Ataque constante y metódico',dmg:[18,28],effect:'Ignora la defensa del enemigo',bonus:'procrastination'},
+  {id:'fortaleza',icon:'🛡',name:'FORTITUDO',desc:'Escudo y contraataque estoico',dmg:[12,22],effect:'Reduce daño recibido 30%',bonus:'fear'},
+  {id:'concentracion',icon:'🎯',name:'CONCENTRATIO',desc:'Golpe preciso de sniper romano',dmg:[25,40],effect:'Alta varianza, alto riesgo',bonus:'distraction'},
+  {id:'pragmatismo',icon:'⚖',name:'PRAGMATISMO',desc:'Ataque equilibrado y seguro',dmg:[15,25],effect:'Acción extra aleatoria',bonus:'perfectionism'},
+  {id:'autoconocimiento',icon:'📜',name:'GNŌTHI SEAUTÓN',desc:'Explotar debilidad filosófica',dmg:[20,35],effect:'Doble daño si es debilidad',bonus:'doubt'},
+  {id:'estructura',icon:'🏛',name,'ORDO ROMANUS',desc:'Formación defensiva y ataque',dmg:[10,20],effect:'Recupera 10 virtus',bonus:'chaos'},
+];
+
+// Fix struct issue
+STRATEGIES[5].name='ORDO ROMANUS';
+
+let state={playerHp:100,playerMaxHp:100,enemyHp:0,enemyMaxHp:0,selectedObstacle:null,inBattle:false,battleOver:false,turn:0};
+
+// ── SETUP ───────────────────────────────────────────────────────────────
+function renderObstacles(){
+  document.getElementById('obstacles-grid').innerHTML=OBSTACLES.map(ob=>`
+    <div class="obstacle-card" id="ob-${ob.id}" onclick="selectObstacle('${ob.id}')">
+      <div class="ob-icon">${ob.icon}</div>
+      <div class="ob-name">${ob.name}</div>
+      <div class="ob-desc">${ob.desc}</div>
+      <div class="ob-hp">❤ Fortaleza: ${ob.hp}</div>
+    </div>`).join('');
+}
+
+function selectObstacle(id){
+  document.querySelectorAll('.obstacle-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('ob-'+id).classList.add('selected');
+  state.selectedObstacle=OBSTACLES.find(o=>o.id===id);
+}
+
+function startBattle(){
+  if(!state.selectedObstacle){addLog('⚠ Selecciona un obstáculo primero, Legionario.',false,true);return;}
+  const ob=state.selectedObstacle;
+  state.playerHp=state.playerMaxHp=100;
+  state.enemyHp=state.enemyMaxHp=ob.hp;
+  state.inBattle=true; state.battleOver=false; state.turn=0;
+  document.getElementById('setup-panel').style.display='none';
+  document.getElementById('arena').style.display='block';
+  document.getElementById('enemy-sprite').textContent=ob.icon;
+  document.getElementById('enemy-name').textContent=ob.name;
+  document.getElementById('enemy-class').textContent=ob.desc;
+  document.getElementById('battle-log').innerHTML='';
+  updateHpBars();
+  renderStrategies();
+  addLog(`⚔ LA BATALLA COMIENZA. Tu legión enfrenta: ${ob.name}`,false,true);
+  addLog(`📜 Debilidad del enemigo: ${ob.weak.toUpperCase()}. ¡Úsala sabiamente!`,false,true);
+}
+
+// ── BATTLE LOGIC ────────────────────────────────────────────────────────
+function renderStrategies(){
+  document.getElementById('strategies-grid').innerHTML=STRATEGIES.map(s=>`
+    <button class="strat-btn" onclick="playerAttack('${s.id}')" ${state.battleOver?'disabled':''}>
+      <span class="strat-icon">${s.icon}</span>
+      <span class="strat-name">${s.name}</span>
+      <span class="strat-desc">${s.desc} | ${s.dmg[0]}-${s.dmg[1]} dmg</span>
+    </button>`).join('');
+  document.getElementById('auto-btn').disabled=state.battleOver;
+}
+
+function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+
+function playerAttack(stratId){
+  if(state.battleOver) return;
+  const strat=STRATEGIES.find(s=>s.id===stratId);
+  const ob=state.selectedObstacle;
+  state.turn++;
+
+  // Player attacks
+  let dmg=rand(strat.dmg[0],strat.dmg[1]);
+  let msg=`Turno ${state.turn}: ⚔ Usas ${strat.name}`;
+
+  if(stratId===ob.weak){
+    dmg=Math.floor(dmg*1.8);
+    msg+=` 🎯 ¡DEBILIDAD EXPLOTADA! x1.8`;
+  }
+
+  if(stratId==='estructura'){
+    const heal=10;
+    state.playerHp=Math.min(state.playerMaxHp,state.playerHp+heal);
+    msg+=` ♻ +${heal} Virtus recuperada`;
+  }
+
+  state.enemyHp=Math.max(0,state.enemyHp-dmg);
+  msg+=` → ${dmg} daño al ${ob.name}`;
+  addLog(msg);
+
+  animate('fighter-player','attacking');
+
+  if(state.enemyHp<=0){
+    victory();return;
+  }
+
+  // Enemy counterattack
+  setTimeout(()=>{
+    let eDmg=rand(Math.floor(ob.atk*.6),ob.atk);
+    if(stratId==='fortaleza') eDmg=Math.floor(eDmg*.7);
+    state.playerHp=Math.max(0,state.playerHp-eDmg);
+
+    const quotes=['No retrocedas, Legionario!','El estoico no siente el dolor.','¡Mantén la formación!','Virtus et Honor!'];
+    addLog(`☠ ${ob.name} contraataca → ${eDmg} daño. "${quotes[state.turn%quotes.length]}"`);
+    animate('fighter-enemy','attacking');
+    animate('fighter-player','hit');
+
+    updateHpBars();
+    if(state.playerHp<=0){defeat();return;}
+    renderStrategies();
+  },600);
+
+  updateHpBars();
+}
+
+function autoResolve(){
+  if(state.battleOver) return;
+  const ob=state.selectedObstacle;
+  const bestStrat=STRATEGIES.find(s=>s.id===ob.weak)||STRATEGIES[0];
+  let steps=0;
+  const interval=setInterval(()=>{
+    if(state.battleOver||steps>30){clearInterval(interval);return;}
+    playerAttack(bestStrat.id);
+    steps++;
+  },800);
+}
+
+function victory(){
+  state.battleOver=true;
+  const philosopherQuotes=['Veni, vidi, vici — Julio César','La virtud es su propia recompensa — Marco Aurelio','La disciplina vence al talento — anónimo romano'];
+  addLog(`🏆 ¡VICTORIA! Has conquistado ${state.selectedObstacle.name}.`,false,false,true);
+  addLog(`📜 "${philosopherQuotes[Math.floor(Math.random()*philosopherQuotes.length)]}"`,false,false,true);
+  document.getElementById('enemy-sprite').textContent='💥';
+  renderStrategies();
+}
+
+function defeat(){
+  state.battleOver=true;
+  addLog(`💀 TU LEGIÓN HA CAÍDO. Reagrupa y vuelve más fuerte.`,false,true,false,true);
+  addLog(`📜 "El sabio aprende más del fracaso que el necio del éxito" — Séneca`,false,true);
+  renderStrategies();
+}
+
+function resetBattle(){
+  state={playerHp:100,playerMaxHp:100,enemyHp:0,enemyMaxHp:0,selectedObstacle:null,inBattle:false,battleOver:false,turn:0};
+  document.getElementById('arena').style.display='none';
+  document.getElementById('setup-panel').style.display='block';
+  document.querySelectorAll('.obstacle-card').forEach(c=>c.classList.remove('selected'));
+}
+
+function updateHpBars(){
+  const pp=Math.max(0,state.playerHp/state.playerMaxHp*100);
+  const ep=Math.max(0,state.enemyHp/state.enemyMaxHp*100);
+  const pBar=document.getElementById('player-hp-bar');
+  const eBar=document.getElementById('enemy-hp-bar');
+  pBar.style.width=pp+'%';
+  pBar.style.setProperty('--hc',pp>50?'var(--green)':pp>25?'var(--gold)':'var(--red3)');
+  eBar.style.width=ep+'%';
+  document.getElementById('player-hp-num').textContent=state.playerHp+'/'+state.playerMaxHp;
+  document.getElementById('enemy-hp-num').textContent=state.enemyHp+'/'+state.enemyMaxHp;
+}
+
+function animate(fighterId,cls){
+  const el=document.getElementById(fighterId);
+  el.classList.add(cls);
+  setTimeout(()=>el.classList.remove(cls),400);
+}
+
+function addLog(text,_unused,isSystem,isVictory,isDefeat){
+  const log=document.getElementById('battle-log');
+  const entry=document.createElement('div');
+  entry.className='log-entry'+(isSystem?' system':isVictory?' victory':isDefeat?' defeat':'');
+  entry.textContent=text;
+  log.appendChild(entry);
+  log.scrollTop=log.scrollHeight;
+}
+
+renderObstacles();
+</script>
+</body>
+</html>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Metasoc: Conquista tus metas con filosofía romana</title>
+  <meta name="description" content="Metasoc — Plataforma de metas con filosofía romana y disciplina legionaria."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --void:#08070a; --stone-dk:#100d0a; --stone:#1a1410; --stone-md:#2a2018; --stone-lt:#3d2e20;
+      --red:#8b1a1a; --red2:#cc2200; --red3:#ff4422;
+      --gold:#c8960c; --gold-br:#f0c040; --gold-dk:#7a5a08;
+      --blue:#1a3a5c; --blue2:#2255aa; --blue3:#4488cc;
+      --parch:#f5e6c8; --parch-md:#d4b896; --parch-dk:#8b7355; --parch-dim:#5c4a2a;
+      --green:#00aa55; --font-px:'Press Start 2P',monospace; --font-r:'VT323',monospace;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{image-rendering:pixelated}
+    body{background:var(--void);background-image:linear-gradient(rgba(200,150,12,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(200,150,12,.012) 1px,transparent 1px);background-size:8px 8px;color:var(--parch-md);font-family:var(--font-r);min-height:100vh;overflow-x:hidden}
+
+    @keyframes torch{0%,100%{opacity:1}33%{opacity:.88}66%{opacity:.96}}
+    @keyframes march{0%{transform:translateX(-200px)}100%{transform:translateX(calc(100vw + 200px))}}
+    @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+    @keyframes boot-fill{from{width:0}to{width:100%}}
+    @keyframes slide-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+    /* LEGIONARY SPRITE */
+    .leg{display:inline-block;width:20px;height:28px;position:relative;flex-shrink:0}
+    .leg .sp{position:absolute;width:2px;height:2px;top:0;left:0;
+      box-shadow:
+        8px 0 0 0 var(--red2),10px 0 0 0 var(--red2),
+        6px 2px 0 0 var(--gold),8px 2px 0 0 var(--gold),10px 2px 0 0 var(--gold),12px 2px 0 0 var(--gold),
+        8px 4px 0 0 var(--parch-md),10px 4px 0 0 var(--parch-md),
+        8px 6px 0 0 var(--parch-md),10px 6px 0 0 var(--parch-md),
+        4px 8px 0 0 var(--red),6px 8px 0 0 var(--red),8px 8px 0 0 var(--red),10px 8px 0 0 var(--red),12px 8px 0 0 var(--red),
+        4px 10px 0 0 var(--red),6px 10px 0 0 var(--red),8px 10px 0 0 var(--red),10px 10px 0 0 var(--red),12px 10px 0 0 var(--red),
+        2px 8px 0 0 var(--red),2px 10px 0 0 var(--red),2px 12px 0 0 var(--red),
+        6px 12px 0 0 var(--gold-dk),8px 12px 0 0 var(--gold-dk),10px 12px 0 0 var(--gold-dk),
+        6px 14px 0 0 var(--parch-dk),8px 14px 0 0 var(--parch-dk),10px 14px 0 0 var(--parch-dk),
+        6px 16px 0 0 var(--parch-dk),10px 16px 0 0 var(--parch-dk),
+        6px 18px 0 0 var(--parch-dk),10px 18px 0 0 var(--parch-dk),
+        4px 20px 0 0 var(--parch-dim),6px 20px 0 0 var(--parch-dim),10px 20px 0 0 var(--parch-dim),12px 20px 0 0 var(--parch-dim),
+        16px 2px 0 0 var(--parch-md),16px 4px 0 0 var(--parch-md),16px 6px 0 0 var(--parch-md),16px 8px 0 0 var(--parch-md),16px 10px 0 0 var(--parch-md),16px 12px 0 0 var(--parch-md),16px 14px 0 0 var(--parch-md),16px 16px 0 0 var(--parch-md),16px 18px 0 0 var(--parch-md),16px 20px 0 0 var(--parch-md);
+      animation:bob .5s ease-in-out infinite}
+    .leg:nth-child(even) .sp{animation-delay:.25s}
+
+    /* MARCH BG */
+    .march-bg{position:fixed;bottom:0;left:0;right:0;height:56px;overflow:hidden;pointer-events:none;z-index:0;background:linear-gradient(transparent,rgba(8,7,10,.85))}
+    .legion-row{position:absolute;bottom:8px;display:flex;gap:22px;opacity:.3}
+    .legion-row:nth-child(1){animation:march 30s linear infinite}
+    .legion-row:nth-child(2){animation:march 30s linear infinite;animation-delay:-15s;bottom:5px;opacity:.18}
+
+    /* NAV */
+    nav{position:sticky;top:0;z-index:300;background:var(--stone-dk);border-bottom:3px solid var(--gold-dk);box-shadow:0 2px 0 #000,0 3px 0 var(--gold)}
+    .nav-inner{display:flex;align-items:center;padding:0 1.5rem;max-width:1400px;margin:0 auto}
+    .nav-logo{display:flex;align-items:center;gap:.7rem;padding:.65rem 1.5rem .65rem 0;border-right:2px solid var(--gold-dk);text-decoration:none}
+    .logo-emblem{width:38px;height:38px;background:var(--red);box-shadow:0 0 0 2px var(--gold),2px 2px 0 #000;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+    .logo-text{font-family:var(--font-px);font-size:.7rem;color:var(--gold-br);letter-spacing:.1em;animation:torch 2s ease-in-out infinite;line-height:1}
+    .logo-sub{font-family:var(--font-r);font-size:.75rem;color:var(--parch-dim);letter-spacing:.18em}
+    .nav-links{display:flex;align-items:stretch;flex:1;list-style:none}
+    .nav-links li a{display:flex;align-items:center;gap:.35rem;padding:0 .9rem;height:56px;font-family:var(--font-px);font-size:.26rem;color:var(--parch-dk);text-decoration:none;letter-spacing:.05em;border-right:1px solid var(--stone-md);transition:all .1s;white-space:nowrap}
+    .nav-links li a:hover,.nav-links li a.active{color:var(--gold-br);background:rgba(200,150,12,.08)}
+    .nav-links li a span{font-size:.9rem}
+    .nav-right{padding-left:1rem}
+    .day-btn{background:var(--stone-lt);border:none;box-shadow:0 0 0 2px var(--gold-dk),1px 1px 0 #000;color:var(--gold);padding:.3rem .6rem;font-family:var(--font-px);font-size:.26rem;cursor:pointer;transition:all .1s;letter-spacing:.05em}
+    .day-btn:hover{box-shadow:0 0 0 2px var(--gold),1px 1px 0 #000;color:var(--gold-br)}
+
+    /* HERO */
+    .hero{background:linear-gradient(180deg,var(--red) 0%,var(--stone-dk) 100%);border-bottom:3px solid var(--gold-dk);padding:1.8rem 1.5rem 1.4rem;text-align:center;position:relative;overflow:hidden}
+    .hero::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.1) 0,rgba(0,0,0,.1) 1px,transparent 1px,transparent 8px),repeating-linear-gradient(180deg,rgba(0,0,0,.1) 0,rgba(0,0,0,.1) 1px,transparent 1px,transparent 8px);pointer-events:none}
+    .hero-title{font-family:var(--font-px);font-size:clamp(.65rem,2.5vw,1.3rem);color:var(--gold-br);letter-spacing:.15em;animation:torch 1.5s ease-in-out infinite;margin-bottom:.4rem;line-height:1.7}
+    .hero-sub{font-family:var(--font-r);font-size:clamp(1rem,2.5vw,1.4rem);color:var(--parch-md);letter-spacing:.2em;margin-bottom:.8rem}
+    .hero-quote{font-family:var(--font-r);font-size:clamp(.9rem,2vw,1.2rem);color:var(--parch-dk);font-style:italic}
+    .hero-quote em{color:var(--gold);font-style:normal}
+
+    /* PAGE */
+    .page{max-width:1400px;margin:0 auto;padding:1.5rem;position:relative;z-index:1}
+
+    /* STAT ROW */
+    .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--gold-dk);border:2px solid var(--gold-dk);box-shadow:2px 2px 0 #000;margin-bottom:1.4rem}
+    .stat-t{background:var(--stone);padding:.9rem 1.1rem;position:relative;overflow:hidden;animation:slide-up .5s ease forwards}
+    .stat-t::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--tc,var(--gold));box-shadow:0 0 10px var(--tc,var(--gold))}
+    .stat-icon{font-size:1.1rem;margin-bottom:.35rem;display:block}
+    .stat-lbl{font-family:var(--font-px);font-size:.25rem;color:var(--parch-dim);letter-spacing:.06em;line-height:2;margin-bottom:.35rem}
+    .stat-val{font-family:var(--font-r);font-size:2.6rem;color:var(--tc,var(--gold-br));line-height:1}
+    .stat-sub{font-family:var(--font-r);font-size:.85rem;color:var(--parch-dim);margin-top:.25rem}
+    .hp{height:5px;background:var(--stone-lt);box-shadow:inset 1px 1px 0 #000;margin-top:.45rem}
+    .hp-f{height:100%;background:repeating-linear-gradient(90deg,var(--tc,var(--gold)) 0,var(--tc,var(--gold)) 5px,rgba(0,0,0,.3) 5px,rgba(0,0,0,.3) 7px);transition:width 1.2s ease}
+
+    /* DASHBOARD GRID */
+    .dash{display:grid;grid-template-columns:1fr 1fr 360px;gap:1.2rem;margin-bottom:1.4rem}
+
+    /* PANEL */
+    .panel{background:var(--stone);box-shadow:0 0 0 2px var(--gold-dk),2px 2px 0 #000}
+    .p-hdr{padding:.65rem 1rem;border-bottom:2px solid var(--gold-dk);display:flex;align-items:center;justify-content:space-between}
+    .p-title{font-family:var(--font-px);font-size:.3rem;color:var(--gold-br);letter-spacing:.08em;display:flex;align-items:center;gap:6px}
+    .p-title::before{content:'';display:inline-block;width:8px;height:8px;background:var(--red2);box-shadow:0 0 6px var(--red2)}
+    .p-link{font-family:var(--font-px);font-size:.24rem;color:var(--gold);text-decoration:none}
+    .p-body{padding:1rem}
+    .chart-wrap{position:relative;height:210px}
+
+    /* QUOTE PANEL */
+    .quote-panel{background:var(--stone);box-shadow:0 0 0 2px var(--gold-dk),2px 2px 0 #000;padding:1.2rem;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:.8rem;min-height:140px}
+    .q-icon{font-size:1.4rem}
+    .q-text{font-family:var(--font-r);font-size:clamp(1rem,1.8vw,1.4rem);color:var(--parch-md);font-style:italic;line-height:1.5;letter-spacing:.04em}
+    .q-author{font-family:var(--font-px);font-size:.26rem;color:var(--gold);letter-spacing:.1em}
+
+    /* META LIST */
+    .meta-entry{padding:.6rem .9rem;border-bottom:1px solid rgba(122,90,8,.2);display:flex;align-items:flex-start;gap:.65rem;cursor:pointer;transition:background .1s;animation:slide-up .4s ease forwards}
+    .meta-entry:hover{background:rgba(200,150,12,.04)}
+    .meta-dot{width:10px;height:10px;flex-shrink:0;margin-top:4px}
+    .meta-body{flex:1;min-width:0}
+    .meta-title{font-family:var(--font-px);font-size:.27rem;color:var(--parch-md);letter-spacing:.03em;line-height:1.8;margin-bottom:.25rem}
+    .meta-tags{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+    .px-tag{font-family:var(--font-r);font-size:.88rem;padding:0 .4rem}
+    .t-victoria{box-shadow:0 0 0 2px var(--green);color:var(--green)}
+    .t-batalla{box-shadow:0 0 0 2px var(--red2);color:var(--red3)}
+    .t-pendiente{box-shadow:0 0 0 2px var(--parch-dim);color:var(--parch-dk)}
+    .t-cat{color:var(--gold)}
+    .meta-prog{display:flex;align-items:center;gap:.4rem;margin-top:.3rem}
+    .prog-bar{flex:1;height:4px;background:var(--stone-lt)}
+    .prog-fill{height:100%;background:repeating-linear-gradient(90deg,var(--pc,var(--gold)) 0,var(--pc,var(--gold)) 4px,rgba(0,0,0,.3) 4px,rgba(0,0,0,.3) 6px)}
+    .prog-pct{font-family:var(--font-r);font-size:.85rem;color:var(--parch-dim);white-space:nowrap}
+
+    /* REPORTE ENTRY */
+    .rep-entry{padding:.65rem .9rem;border-bottom:1px solid rgba(122,90,8,.2);transition:background .1s}
+    .rep-entry:hover{background:rgba(200,150,12,.04)}
+    .rep-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:.25rem}
+    .rep-ttl{font-family:var(--font-px);font-size:.27rem;color:var(--parch-md);line-height:1.8}
+    .rep-date{font-family:var(--font-r);font-size:.85rem;color:var(--parch-dim)}
+    .rep-sum{font-family:var(--font-r);font-size:.95rem;color:var(--parch-dk);line-height:1.4;margin-bottom:.35rem}
+    .rep-badges{display:flex;gap:.35rem;flex-wrap:wrap}
+    .rep-badge{font-family:var(--font-r);font-size:.85rem;padding:0 .45rem}
+
+    /* BOOT */
+    #boot{position:fixed;inset:0;background:var(--void);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:1.5rem;transition:opacity .4s}
+    .bl{font-family:var(--font-px);font-size:clamp(.9rem,3vw,1.5rem);color:var(--gold-br);letter-spacing:.2em;animation:torch 1s ease-in-out infinite}
+    .bs{font-family:var(--font-r);font-size:clamp(.9rem,2vw,1.3rem);color:var(--parch-dim);letter-spacing:.2em;text-align:center}
+    .bt{width:280px;height:14px;background:var(--stone-lt);box-shadow:0 0 0 2px var(--gold-dk),2px 2px 0 #000}
+    .bf{height:100%;background:repeating-linear-gradient(90deg,var(--red2) 0,var(--red2) 8px,rgba(0,0,0,.3) 8px,rgba(0,0,0,.3) 10px);animation:boot-fill 2.2s ease forwards}
+    .bm{font-family:var(--font-px);font-size:.3rem;color:var(--gold);letter-spacing:.1em}
+
+    /* FOOTER */
+    footer{position:relative;z-index:1;border-top:3px solid var(--gold-dk);background:var(--stone-dk);padding:.75rem 1.5rem 3rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+    .f-left{font-family:var(--font-r);font-size:.9rem;color:var(--parch-dim);display:flex;gap:2rem;flex-wrap:wrap}
+    .f-right{font-family:var(--font-px);font-size:.22rem;color:var(--parch-dim);letter-spacing:.05em}
+
+    /* DAY MODE */
+    body.day{--void:#ede0c4;--stone-dk:#d4c090;--stone:#c8b078;--stone-md:#b89858;--stone-lt:#a88848;--parch-md:#1a0e04;--parch-dk:#3a2818;--parch-dim:#5a4028}
+
+    @media(max-width:1100px){.dash{grid-template-columns:1fr 1fr}}
+    @media(max-width:768px){.dash{grid-template-columns:1fr};.stat-row{grid-template-columns:repeat(2,1fr)};.nav-links{display:none}}
+  </style>
+</head>
+<body>
+
+<!-- BOOT -->
+<div id="boot">
+  <div class="bl">⚔ METASOC ⚔</div>
+  <div class="bs">CONQUISTA TUS METAS<br>CON FILOSOFÍA ROMANA</div>
+  <div class="bt"><div class="bf"></div></div>
+  <div class="bm">DESPLEGANDO LEGIONES...</div>
+</div>
+
+<!-- LEGIONARIES -->
+<div class="march-bg" aria-hidden="true">
+  <div class="legion-row" id="leg1"></div>
+  <div class="legion-row" id="leg2"></div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-emblem">🛡</div>
+      <div>
+        <div class="logo-text">METASOC</div>
+        <div class="logo-sub">META + SOCIETAS</div>
+      </div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active"><span>⚔</span> CAMPAÑA</a></li>
+      <li><a href="filosofia.html"><span>📜</span> FILOSOFÍA</a></li>
+      <li><a href="combate.html"><span>🗡</span> COMBATE</a></li>
+      <li><a href="reportes.html"><span>📋</span> REPORTES</a></li>
+      <li><a href="acerca.html"><span>🏛</span> SENADO</a></li>
+      <li><a href="costs.html"><span>🪙</span> ARCAS</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="day-btn" onclick="toggleDay()" id="day-btn">☀ DÍA</button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-title">⚔ IMPERIUM METASOC ⚔</div>
+  <div class="hero-sub">Conquista tus metas con filosofía romana</div>
+  <div class="hero-quote">"<em id="hq-text">...</em>" — <span id="hq-author" style="color:var(--parch-dk)">Oráculo</span></div>
+</div>
+
+<!-- CONTENT -->
+<div class="page">
+
+  <!-- STATS -->
+  <div class="stat-row">
+    <div class="stat-t" style="--tc:var(--green)">
+      <span class="stat-icon">🏆</span>
+      <div class="stat-lbl">VICTORIAS TOTALES</div>
+      <div class="stat-val" id="sv">0</div>
+      <div class="stat-sub">metas conquistadas</div>
+      <div class="hp"><div class="hp-f" id="bv" style="--tc:var(--green);width:0%"></div></div>
+    </div>
+    <div class="stat-t" style="--tc:var(--red2)">
+      <span class="stat-icon">⚔</span>
+      <div class="stat-lbl">EN BATALLA</div>
+      <div class="stat-val" id="sb">0</div>
+      <div class="stat-sub">frentes abiertos</div>
+      <div class="hp"><div class="hp-f" id="bb" style="--tc:var(--red2);width:0%"></div></div>
+    </div>
+    <div class="stat-t" style="--tc:var(--gold-br)">
+      <span class="stat-icon">📋</span>
+      <div class="stat-lbl">BATALLAS POR LIBRAR</div>
+      <div class="stat-val" id="sp">0</div>
+      <div class="stat-sub">en planificación</div>
+      <div class="hp"><div class="hp-f" id="bp" style="--tc:var(--gold-br);width:0%"></div></div>
+    </div>
+    <div class="stat-t" style="--tc:#4488cc">
+      <span class="stat-icon">🔥</span>
+      <div class="stat-lbl">ÍNDICE DE MORAL</div>
+      <div class="stat-val" id="sm">0</div>
+      <div class="stat-sub">espíritu legionario</div>
+      <div class="hp"><div class="hp-f" id="bm" style="--tc:#4488cc;width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- DASH -->
+  <div class="dash">
+    <!-- Chart 1 -->
+    <div class="panel">
+      <div class="p-hdr">
+        <div class="p-title">Formaciones por Categoría</div>
+        <span style="font-family:var(--font-r);font-size:.9rem;color:var(--parch-dim)">METAS</span>
+      </div>
+      <div class="p-body"><div class="chart-wrap"><canvas id="cc"></canvas></div></div>
+    </div>
+
+    <!-- Chart 2 -->
+    <div class="panel">
+      <div class="p-hdr">
+        <div class="p-title">Avance de Campaña</div>
+        <span style="font-family:var(--font-r);font-size:.9rem;color:var(--parch-dim)">PROGRESO</span>
+      </div>
+      <div class="p-body"><div class="chart-wrap"><canvas id="cp"></canvas></div></div>
+    </div>
+
+    <!-- Right col -->
+    <div style="display:flex;flex-direction:column;gap:1.1rem">
+      <div class="quote-panel">
+        <div class="q-icon">📜</div>
+        <div class="q-text" id="pq-text">"La fortuna favorece a los preparados."</div>
+        <div class="q-author" id="pq-author">— SÉNECA</div>
+      </div>
+
+      <div class="panel">
+        <div class="p-hdr">
+          <div class="p-title">Últimos Informes</div>
+          <a href="reportes.html" class="p-link">VER TODOS ▶</a>
+        </div>
+        <div id="rep-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- META LIST -->
+  <div class="panel">
+    <div class="p-hdr">
+      <div class="p-title">Pergamino de Metas</div>
+      <a href="reportes.html" class="p-link">ARCHIVO ▶</a>
+    </div>
+    <div id="meta-list"></div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="f-left">
+    <span>Metasoc v2.0</span>
+    <span id="f-upd">—</span>
+    <span>Cloudflare Pages</span>
+  </div>
+  <div class="f-right">SPQR — SENATUS POPULUSQUE ROMANUS METASOC</div>
+</footer>
+
+<script>
+const URL_M='./data/metas.json';
+let D=null;
+
+// Build marching legionaries
+function buildLegion(id,n=16){
+  const el=document.getElementById(id);
+  for(let i=0;i<n;i++){const l=document.createElement('div');l.className='leg';const s=document.createElement('div');s.className='sp';l.appendChild(s);el.appendChild(l);}
+}
+
+function anim(el,target,dur=900){
+  const t=Date.now(),from=parseInt(el.textContent)||0;
+  const step=()=>{const p=Math.min((Date.now()-t)/dur,1),e=1-Math.pow(1-p,3);el.textContent=Math.round(from+(target-from)*e);if(p<1)requestAnimationFrame(step);};
+  requestAnimationFrame(step);
+}
+
+function setQuote(d){
+  const c=d.citas[Math.floor(Date.now()/86400000)%d.citas.length];
+  document.getElementById('hq-text').textContent=c.texto;
+  document.getElementById('hq-author').textContent=c.autor;
+  document.getElementById('pq-text').textContent='"'+c.texto+'"';
+  document.getElementById('pq-author').textContent='— '+c.autor.toUpperCase();
+}
+
+function renderStats(d){
+  const m=d.metas;
+  const v=m.filter(x=>x.estado==='victoria').length;
+  const b=m.filter(x=>x.estado==='en_batalla').length;
+  const p=m.filter(x=>x.estado==='pendiente').length;
+  const mo=d.reportes.length?d.reportes[0].indice_moral:75;
+  const tot=m.length||1;
+  anim(document.getElementById('sv'),v);
+  anim(document.getElementById('sb'),b);
+  anim(document.getElementById('sp'),p);
+  anim(document.getElementById('sm'),mo);
+  setTimeout(()=>{
+    document.getElementById('bv').style.width=(v/tot*100)+'%';
+    document.getElementById('bb').style.width=(b/tot*100)+'%';
+    document.getElementById('bp').style.width=(p/tot*100)+'%';
+    document.getElementById('bm').style.width=mo+'%';
+  },400);
+}
+
+const CJ={
+  plugins:{legend:{labels:{font:{family:"'VT323',monospace",size:14},color:'#d4b896',boxWidth:12}},tooltip:{backgroundColor:'#1a1410',borderColor:'#7a5a08',borderWidth:2,titleFont:{family:"'Press Start 2P',monospace",size:8},bodyFont:{family:"'VT323',monospace",size:14},titleColor:'#f0c040',bodyColor:'#d4b896'}},
+  scales:{x:{grid:{color:'rgba(122,90,8,.2)'},ticks:{font:{family:"'VT323',monospace",size:13},color:'#8b7355'}},y:{grid:{color:'rgba(122,90,8,.2)'},ticks:{font:{family:"'VT323',monospace",size:13},color:'#8b7355'}}}
+};
+
+function buildCharts(d){
+  const cats={};
+  d.metas.forEach(m=>{cats[m.categoria]=cats[m.categoria]||{v:0,b:0,p:0};if(m.estado==='victoria')cats[m.categoria].v++;else if(m.estado==='en_batalla')cats[m.categoria].b++;else cats[m.categoria].p++;});
+  const labs=Object.keys(cats).map(c=>c.toUpperCase());
+  new Chart(document.getElementById('cc').getContext('2d'),{type:'bar',data:{labels:labs,datasets:[{label:'Victoria',data:Object.values(cats).map(c=>c.v),backgroundColor:'rgba(0,170,85,.7)',borderColor:'#00aa55',borderWidth:2},{label:'Batalla',data:Object.values(cats).map(c=>c.b),backgroundColor:'rgba(204,34,0,.7)',borderColor:'#cc2200',borderWidth:2},{label:'Pendiente',data:Object.values(cats).map(c=>c.p),backgroundColor:'rgba(122,90,8,.5)',borderColor:'#7a5a08',borderWidth:2}]},options:{...CJ,responsive:true,maintainAspectRatio:false,scales:{...CJ.scales,y:{...CJ.scales.y,beginAtZero:true,ticks:{...CJ.scales.y.ticks,stepSize:1}}}}});
+
+  const act=d.metas.filter(m=>m.estado==='en_batalla').slice(0,5);
+  new Chart(document.getElementById('cp').getContext('2d'),{type:'bar',data:{labels:act.map(m=>m.titulo.substring(0,18)+'…'),datasets:[{label:'Progreso %',data:act.map(m=>m.progreso),backgroundColor:act.map(m=>m.progreso>66?'rgba(0,170,85,.7)':m.progreso>33?'rgba(200,150,12,.7)':'rgba(204,34,0,.65)'),borderColor:'#c8960c',borderWidth:2}]},options:{...CJ,indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{...CJ.plugins,legend:{display:false}},scales:{...CJ.scales,x:{...CJ.scales.x,min:0,max:100}}}});
+}
+
+function renderMetaList(d){
+  const SC={victoria:'var(--green)',en_batalla:'var(--red2)',pendiente:'var(--parch-dim)',retirada:'#444'};
+  const PC={victoria:'var(--green)',en_batalla:'var(--red2)',pendiente:'var(--gold)',retirada:'#444'};
+  const ST={victoria:'t-victoria',en_batalla:'t-batalla',pendiente:'t-pendiente',retirada:''};
+  document.getElementById('meta-list').innerHTML=d.metas.filter(m=>m.estado!=='retirada').slice(0,8).map((m,i)=>`
+    <div class="meta-entry" style="animation-delay:${i*40}ms" onclick="location.href='reportes.html'">
+      <div class="meta-dot" style="background:${SC[m.estado]};box-shadow:0 0 4px ${SC[m.estado]}"></div>
+      <div class="meta-body">
+        <div class="meta-title">${m.titulo}</div>
+        <div class="meta-tags">
+          <span class="px-tag ${ST[m.estado]}">${m.estado.replace('_',' ').toUpperCase()}</span>
+          <span class="px-tag t-cat">${m.categoria}</span>
+          <span style="font-family:var(--font-r);font-size:.85rem;color:var(--parch-dim);margin-left:auto">${m.legion}</span>
+        </div>
+        <div class="meta-prog">
+          <div class="prog-bar"><div class="prog-fill" style="width:${m.progreso}%;--pc:${PC[m.estado]}"></div></div>
+          <span class="prog-pct">${m.progreso}%</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function renderReportes(d){
+  document.getElementById('rep-list').innerHTML=d.reportes.slice(0,3).map(r=>`
+    <div class="rep-entry">
+      <div class="rep-hdr"><span class="rep-ttl">${r.titulo}</span><span class="rep-date">${r.fecha}</span></div>
+      <div class="rep-sum">${r.resumen}</div>
+      <div class="rep-badges">
+        <span class="rep-badge" style="box-shadow:0 0 0 2px var(--green);color:var(--green)">🏆 ${r.victorias_nuevas} victorias</span>
+        <span class="rep-badge" style="box-shadow:0 0 0 2px var(--red2);color:var(--red3)">⚔ ${r.batallas_activas} batallas</span>
+        <span class="rep-badge" style="box-shadow:0 0 0 2px #4488cc;color:#4488cc">🔥 moral ${r.indice_moral}</span>
+      </div>
+    </div>`).join('');
+}
+
+function toggleDay(){
+  document.body.classList.toggle('day');
+  document.getElementById('day-btn').textContent=document.body.classList.contains('day')?'🌙 NOCHE':'☀ DÍA';
+}
+
+window.addEventListener('load',async()=>{
+  buildLegion('leg1',18); buildLegion('leg2',18);
+  try{
+    D=await(await fetch(URL_M)).json();
+    setQuote(D); renderStats(D); renderMetaList(D); renderReportes(D); buildCharts(D);
+    const upd=new Date(D.meta.last_updated);
+    document.getElementById('f-upd').textContent='Actualizado: '+upd.toLocaleString('es',{dateStyle:'short',timeStyle:'short'});
+  }catch(e){console.warn('Error:',e)}
+  setTimeout(()=>{const el=document.getElementById('boot');el.style.opacity='0';setTimeout(()=>el.remove(),400);},2400);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Metasoc — Filosofía Romana y Griega</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--void:#08070a;--stone-dk:#100d0a;--stone:#1a1410;--stone-md:#2a2018;--stone-lt:#3d2e20;--red:#8b1a1a;--red2:#cc2200;--gold:#c8960c;--gold-br:#f0c040;--gold-dk:#7a5a08;--blue3:#4488cc;--parch-md:#d4b896;--parch-dk:#8b7355;--parch-dim:#5c4a2a;--green:#00aa55;--font-px:'Press Start 2P',monospace;--font-r:'VT323',monospace}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{image-rendering:pixelated}
+    body{background:var(--void);background-image:linear-gradient(rgba(200,150,12,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(200,150,12,.012) 1px,transparent 1px);background-size:8px 8px;color:var(--parch-md);font-family:var(--font-r);min-height:100vh}
+    @keyframes torch{0%,100%{opacity:1}33%{opacity:.88}66%{opacity:.96}}
+    @keyframes scroll-in{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+    nav{position:sticky;top:0;z-index:300;background:var(--stone-dk);border-bottom:3px solid var(--gold-dk);box-shadow:0 2px 0 #000,0 3px 0 var(--gold)}
+    .nav-inner{display:flex;align-items:center;padding:0 1.5rem;max-width:1400px;margin:0 auto}
+    .nav-logo{display:flex;align-items:center;gap:.7rem;padding:.65rem 1.5rem .65rem 0;border-right:2px solid var(--gold-dk);text-decoration:none}
+    .logo-emblem{width:38px;height:38px;background:var(--red);box-shadow:0 0 0 2px var(--gold),2px 2px 0 #000;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+    .logo-text{font-family:var(--font-px);font-size:.7rem;color:var(--gold-br);letter-spacing:.1em;animation:torch 2s ease-in-out infinite;line-height:1}
+    .logo-sub{font-family:var(--font-r);font-size:.75rem;color:var(--parch-dim);letter-spacing:.18em}
+    .nav-links{display:flex;align-items:stretch;flex:1;list-style:none}
+    .nav-links li a{display:flex;align-items:center;gap:.35rem;padding:0 .9rem;height:56px;font-family:var(--font-px);font-size:.26rem;color:var(--parch-dk);text-decoration:none;letter-spacing:.05em;border-right:1px solid var(--stone-md);transition:all .1s;white-space:nowrap}
+    .nav-links li a:hover,.nav-links li a.active{color:var(--gold-br);background:rgba(200,150,12,.08)}
+    .nav-links li a span{font-size:.9rem}
+    @media(max-width:768px){.nav-links{display:none}}
+
+    .page-hero{background:linear-gradient(180deg,var(--blue3) 0%,var(--stone-dk) 100%);border-bottom:3px solid var(--gold-dk);padding:2rem 1.5rem 1.5rem;text-align:center}
+    .page-hero-title{font-family:var(--font-px);font-size:clamp(.6rem,2vw,1.1rem);color:var(--gold-br);letter-spacing:.15em;animation:torch 1.5s ease-in-out infinite;margin-bottom:.5rem;line-height:1.7}
+    .page-hero-sub{font-family:var(--font-r);font-size:clamp(1rem,2.5vw,1.4rem);color:var(--parch-md);letter-spacing:.2em}
+
+    .page{max-width:1000px;margin:0 auto;padding:2rem 1.5rem 4rem}
+
+    /* SCHOOL FILTER */
+    .school-filter{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.8rem;align-items:center}
+    .sf-label{font-family:var(--font-px);font-size:.28rem;color:var(--gold);letter-spacing:.08em;margin-right:.3rem}
+    .sf-btn{background:var(--stone-lt);border:none;box-shadow:0 0 0 2px var(--gold-dk),2px 2px 0 #000;color:var(--parch-dim);padding:.3rem .8rem;font-family:var(--font-px);font-size:.26rem;letter-spacing:.05em;cursor:pointer;transition:all .1s}
+    .sf-btn:hover,.sf-btn.active{box-shadow:0 0 0 2px var(--gold),2px 2px 0 #000;color:var(--gold-br);background:var(--stone)}
+
+    /* SCROLL CARDS */
+    .scrolls-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.2rem}
+
+    .scroll-card{background:var(--stone);box-shadow:0 0 0 2px var(--gold-dk),2px 2px 0 #000;animation:scroll-in .5s ease forwards;cursor:default;transition:transform .1s}
+    .scroll-card:hover{transform:translate(-2px,-2px);box-shadow:0 0 0 2px var(--gold),4px 4px 0 #000}
+
+    .scroll-hdr{background:var(--stone-md);border-bottom:2px solid var(--gold-dk);padding:.7rem 1rem;display:flex;align-items:center;gap:.6rem}
+    .scroll-school-badge{font-family:var(--font-px);font-size:.24rem;padding:.2rem .5rem;letter-spacing:.05em}
+    .scroll-author{font-family:var(--font-px);font-size:.28rem;color:var(--gold-br);letter-spacing:.08em;line-height:1.6}
+    .scroll-era{font-family:var(--font-r);font-size:.85rem;color:var(--parch-dim)}
+    .scroll-icon{font-size:1.2rem;margin-left:auto}
+
+    .scroll-body{padding:1.1rem}
+    .scroll-text{font-family:var(--font-r);font-size:1.15rem;color:var(--parch-md);font-style:italic;line-height:1.6;letter-spacing:.04em;margin-bottom:.8rem;border-left:3px solid var(--gold-dk);padding-left:.8rem}
+    .scroll-meta{font-family:var(--font-r);font-size:.9rem;color:var(--parch-dk);line-height:1.5}
+    .scroll-cat{margin-top:.6rem}
+    .cat-pill{font-family:var(--font-r);font-size:.85rem;padding:0 .5rem;color:var(--gold);box-shadow:0 0 0 1px var(--gold-dk)}
+
+    /* PILLARS SECTION */
+    .section-title{font-family:var(--font-px);font-size:.4rem;color:var(--gold-br);letter-spacing:.12em;margin:2rem 0 1.2rem;display:flex;align-items:center;gap:8px}
+    .section-title::before{content:'';display:inline-block;width:12px;height:12px;background:var(--red2);box-shadow:0 0 8px var(--red2)}
+
+    .pillars-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}
+    .pillar{background:var(--stone);box-shadow:0 0 0 2px var(--gold-dk),2px 2px 0 #000;padding:1.1rem;text-align:center}
+    .pillar-icon{font-size:2rem;margin-bottom:.6rem}
+    .pillar-name{font-family:var(--font-px);font-size:.3rem;color:var(--gold-br);letter-spacing:.08em;margin-bottom:.5rem;line-height:1.7}
+    .pillar-desc{font-family:var(--font-r);font-size:1rem;color:var(--parch-dk);line-height:1.5}
+
+    footer{border-top:3px solid var(--gold-dk);background:var(--stone-dk);padding:.75rem 1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+    .f-left{font-family:var(--font-r);font-size:.9rem;color:var(--parch-dim);display:flex;gap:2rem}
+    .f-right{font-family:var(--font-px);font-size:.22rem;color:var(--parch-dim)}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-emblem">🛡</div>
+      <div><div class="logo-text">METASOC</div><div class="logo-sub">META + SOCIETAS</div></div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html"><span>⚔</span> CAMPAÑA</a></li>
+      <li><a href="filosofia.html" class="active"><span>📜</span> FILOSOFÍA</a></li>
+      <li><a href="combate.html"><span>🗡</span> COMBATE</a></li>
+      <li><a href="reportes.html"><span>📋</span> REPORTES</a></li>
+      <li><a href="acerca.html"><span>🏛</span> SENADO</a></li>
+      <li><a href="costs.html"><span>🪙</span> ARCAS</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="page-hero-title">📜 BIBLIOTHECA PHILOSOPHICA 📜</div>
+  <div class="page-hero-sub">Sabiduría romana y griega aplicada a tus metas</div>
+</div>
+
+<div class="page">
+
+  <!-- PILLARS -->
+  <div class="section-title">Las 4 Virtudes Cardinales Romanas</div>
+  <div class="pillars-grid">
+    <div class="pillar"><div class="pillar-icon">⚖</div><div class="pillar-name">PRUDENTIA</div><div class="pillar-desc">Planifica antes de actuar. El sabio contempla todos los caminos antes de elegir uno.</div></div>
+    <div class="pillar"><div class="pillar-icon">🛡</div><div class="pillar-name">IUSTITIA</div><div class="pillar-desc">Actúa con equidad. La justicia es el fundamento de toda alianza y societas duradera.</div></div>
+    <div class="pillar"><div class="pillar-icon">⚔</div><div class="pillar-name">FORTITUDO</div><div class="pillar-desc">Enfrenta los obstáculos sin retroceder. El valor no es ausencia de miedo, sino su conquista.</div></div>
+    <div class="pillar"><div class="pillar-icon">🌿</div><div class="pillar-name">TEMPERANTIA</div><div class="pillar-desc">El exceso destruye imperios. La moderación en todos los actos es sabiduría aplicada.</div></div>
+  </div>
+
+  <!-- QUOTES FILTER -->
+  <div class="section-title">Pergaminos de Sabiduría</div>
+  <div class="school-filter">
+    <span class="sf-label">ESCUELA:</span>
+    <button class="sf-btn active" data-school="all">TODAS</button>
+    <button class="sf-btn" data-school="estoica">ESTOICA</button>
+    <button class="sf-btn" data-school="platonica">PLATÓNICA</button>
+    <button class="sf-btn" data-school="romana">ROMANA</button>
+    <button class="sf-btn" data-school="pitagorica">PITAGÓRICA</button>
+  </div>
+
+  <div class="scrolls-grid" id="scrolls-grid"></div>
+
+</div>
+
+<footer>
+  <div class="f-left"><span>Metasoc v2.0</span><span>Filosofía aplicada a la conquista de metas</span></div>
+  <div class="f-right">SPQR — SENATUS POPULUSQUE ROMANUS METASOC</div>
+</footer>
+
+<script>
+const CITAS=[
+  {autor:'Marco Aurelio',era:'121–180 d.C.',escuela:'estoica',icon:'📜',texto:'Pierde el tiempo quien hace lo que podría hacer mañana.',aplicacion:'En las metas: la procrastinación es el mayor enemigo de la disciplina romana. Actúa hoy.'},
+  {autor:'Séneca',era:'4 a.C.–65 d.C.',escuela:'estoica',icon:'🌿',texto:'La fortuna favorece a los preparados.',aplicacion:'Planifica cada meta como un general romano planea su campaña: con mapas, recursos y contingencias.'},
+  {autor:'Séneca',era:'4 a.C.–65 d.C.',escuela:'estoica',icon:'⚖',texto:'No es pobre quien tiene poco sino quien desea mucho.',aplicacion:'Define metas realistas. La codicia de metas imposibles paraliza; la sabiduría de metas alcanzables conquista.'},
+  {autor:'Epicteto',era:'50–135 d.C.',escuela:'estoica',icon:'🛡',texto:'Ninguna gran cosa se crea súbitamente.',aplicacion:'El progreso incremental es la estrategia legionaria. Cada día avanza un poco; el tiempo hace el resto.'},
+  {autor:'Marco Aurelio',era:'121–180 d.C.',escuela:'estoica',icon:'🔥',texto:'Nunca estimes provechoso para ti lo que te obligue a romper tu palabra.',aplicacion:'La integridad en tus compromisos es la base de cualquier alianza duradera.'},
+  {autor:'Platón',era:'427–347 a.C.',escuela:'platonica',icon:'✨',texto:'El precio de ignorar la política es ser gobernado por los peores.',aplicacion:'El que no gestiona sus metas es gobernado por las circunstancias. Toma el control.'},
+  {autor:'Sócrates',era:'470–399 a.C.',escuela:'platonica',icon:'💡',texto:'Solo sé que no sé nada.',aplicacion:'La humildad intelectual es el primer paso: antes de conquistar una meta, conoce tu ignorancia sobre ella.'},
+  {autor:'Aristóteles',era:'384–322 a.C.',escuela:'platonica',icon:'🏛',texto:'Somos lo que hacemos repetidamente. La excelencia es un hábito.',aplicacion:'Las metas se conquistan con hábitos diarios, no con grandes gestos esporádicos.'},
+  {autor:'Julio César',era:'100–44 a.C.',escuela:'romana',icon:'⚔',texto:'Veni, vidi, vici.',aplicacion:'La ejecución veloz y decisiva diferencia a los líderes de los que solo planean eternamente.'},
+  {autor:'Vegecio',era:'Siglo IV d.C.',escuela:'romana',icon:'🗡',texto:'Si vis pacem, para bellum.',aplicacion:'Prepárate para los obstáculos antes de que aparezcan. La preparación es la mejor estrategia.'},
+  {autor:'Pitágoras',era:'570–495 a.C.',escuela:'pitagorica',icon:'🌀',texto:'El comienzo es la mitad del todo.',aplicacion:'Dar el primer paso hacia una meta es superar la barrera más difícil. Empieza hoy.'},
+  {autor:'Heráclito',era:'535–475 a.C.',escuela:'pitagorica',icon:'🌊',texto:'Nadie se baña dos veces en el mismo río.',aplicacion:'Cada intento de alcanzar una meta es único. Aprende de cada intento anterior sin repetirlo.'},
+];
+
+const COLORS={estoica:'#4488cc',platonica:'#8855cc',romana:'#cc2200',pitagorica:'#00aa55'};
+let currentSchool='all';
+
+function renderScrolls(){
+  const filtered=currentSchool==='all'?CITAS:CITAS.filter(c=>c.escuela===currentSchool);
+  document.getElementById('scrolls-grid').innerHTML=filtered.map((c,i)=>`
+    <div class="scroll-card" style="animation-delay:${i*60}ms">
+      <div class="scroll-hdr">
+        <div>
+          <span class="scroll-school-badge" style="box-shadow:0 0 0 2px ${COLORS[c.escuela]};color:${COLORS[c.escuela]}">${c.escuela.toUpperCase()}</span>
+          <div class="scroll-author" style="margin-top:.3rem">${c.autor}</div>
+          <div class="scroll-era">${c.era}</div>
+        </div>
+        <div class="scroll-icon">${c.icon}</div>
+      </div>
+      <div class="scroll-body">
+        <div class="scroll-text">"${c.texto}"</div>
+        <div class="scroll-meta"><strong style="color:var(--gold)">⚔ Aplicación a tus metas:</strong><br>${c.aplicacion}</div>
+      </div>
+    </div>`).join('');
+}
+
+document.querySelectorAll('.sf-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.sf-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentSchool=btn.dataset.school;
+    renderScrolls();
+  });
+});
+
+renderScrolls();
+</script>
+</body>
+</html>

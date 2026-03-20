@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Metasoc — Archivo de Reportes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--void:#08070a;--stone-dk:#100d0a;--stone:#1a1410;--stone-md:#2a2018;--stone-lt:#3d2e20;--red:#8b1a1a;--red2:#cc2200;--red3:#ff4422;--gold:#c8960c;--gold-br:#f0c040;--gold-dk:#7a5a08;--blue3:#4488cc;--parch-md:#d4b896;--parch-dk:#8b7355;--parch-dim:#5c4a2a;--green:#00aa55;--font-px:'Press Start 2P',monospace;--font-r:'VT323',monospace}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{image-rendering:pixelated}
+    body{background:var(--void);background-image:linear-gradient(rgba(200,150,12,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(200,150,12,.012) 1px,transparent 1px);background-size:8px 8px;color:var(--parch-md);font-family:var(--font-r);min-height:100vh}
+    @keyframes torch{0%,100%{opacity:1}33%{opacity:.88}66%{opacity:.96}}
+    @keyframes slide-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+    nav{position:sticky;top:0;z-index:300;background:var(--stone-dk);border-bottom:3px solid var(--gold-dk);box-shadow:0 2px 0 #000,0 3px 0 var(--gold)}
+    .nav-inner{display:flex;align-items:center;padding:0 1.5rem;max-width:1400px;margin:0 auto}
+    .nav-logo{display:flex;align-items:center;gap:.7rem;padding:.65rem 1.5rem .65rem 0;border-right:2px solid var(--gold-dk);text-decoration:none}
+    .logo-emblem{width:38px;height:38px;background:var(--red);box-shadow:0 0 0 2px var(--gold),2px 2px 0 #000;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+    .logo-text{font-family:var(--font-px);font-size:.7rem;color:var(--gold-br);letter-spacing:.1em;animation:torch 2s ease-in-out infinite;line-height:1}
+    .logo-sub{font-family:var(--font-r);font-size:.75rem;color:var(--parch-dim);letter-spacing:.18em}
+    .nav-links{display:flex;align-items:stretch;flex:1;list-style:none}
+    .nav-links li a{display:flex;align-items:center;gap:.35rem;padding:0 .9rem;height:56px;font-family:var(--font-px);font-size:.26rem;color:var(--parch-dk);text-decoration:none;letter-spacing:.05em;border-right:1px solid var(--stone-md);transition:all .1s;white-space:nowrap}
+    .nav-links li a:hover,.nav-links li a.active{color:var(--gold-br);background:rgba(200,150,12,.08)}
+    .nav-links li a span{font-size:.9rem}
+    @media(max-width:768px){.nav-links{display:none}}
+
+    .page-hero{background:linear-gradient(180deg,var(--stone-md) 0%,var(--stone-dk) 100%);border-bottom:3px solid var(--gold-dk);padding:1.8rem 1.5rem 1.4rem;text-align:center}
+    .page-hero-title{font-family:var(--font-px);font-size:clamp(.6rem,2vw,1.1rem);color:var(--gold-br);letter-spacing:.15em;animation:torch 1.5s ease-in-out infinite;margin-bottom:.4rem;line-height:1.7}
+    .page-hero-sub{font-family:var(--font-r);font-size:clamp(1rem,2.5vw,1.4rem);color:var(--parch-md);letter-spacing:.2em}
+
+    .page{max-width:1200px;margin:0 auto;padding:1.5rem 1.5rem 4rem}
+
+    /* SECTION TITLE */
+    .sec-title{font-family:var(--font-px);font-size:.38rem;color:var(--gold-br);letter-spacing:.1em;margin:1.5rem 0 1rem;display:flex;align-items:center;gap:8px}
+    .sec-title::before{content:'';display:inline-block;width:10px;height:10px;background:var(--red2);box-shadow:0 0 8px var(--red2)}
+
+    /* FILTER */
+    .filter-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.2rem;align-items:center}
+    .fl{font-family:var(--font-px);font-size:.26rem;color:var(--gold);letter-spacing:.06em;margin-right:.3rem}
+    .fb{background:var(--stone-lt);border:none;box-shadow:0 0 0 2px var(--gold-dk),2px 2px 0 #000;color:var(--parch-dim);padding:.28rem .7rem;font-family:var(--font-px);font-size:.24rem;letter-spacing:.04em;cursor:pointer;transition:all .1s}
+    .fb:hover,.fb.active{box-shadow:0 0 0 2px var(--gold),2px 2px 0 #000;color:var(--gold-br);background:var(--stone)}
+
+    /* METAS TABLE */
+    .metas-table{width:100%;border-collapse:collapse;background:var(--stone);box-shadow:0 0 0 2px var(--gold-dk),2px 2px 0 #000}
+    .metas-table th{font-family:var(--font-px);font-size:.25rem;color:var(--gold);letter-spacing:.06em;padding:.6rem .8rem;background:var(--stone-md);border-bottom:2px solid var(--gold-dk);text-align:left}
+    .metas-table td{font-family:var(--font-r);font-size:1rem;color:var(--parch-md);padding:.55rem .8rem;border-bottom:1px solid rgba(122,90,8,.2);vertical-align:middle}
+    .metas-table tr:hover td{background:rgba(200,150,12,.04)}
+    .metas-table tr.hidden{display:none}
+
+    .estado-badge{font-family:var(--font-r);font-size:.88rem;padding:0 .5rem}
+    .e-victoria{box-shadow:0 0 0 2px var(--green);color:var(--green)}
+    .e-batalla{box-shadow:0 0 0 2px var(--red2);color:var(--red3)}
+    .e-pendiente{box-shadow:0 0 0 2px var(--parch-dim);color:var(--parch-dk)}
+
+    .prog-mini{width:80px;height:6px;background:var(--stone-lt);display:inline-block;vertical-align:middle}
+    .prog-mini-fill{height:100%;background:var(--green)}
+
+    .cat-tag{font-family:var(--font-r);font-size:.85rem;padding:0 .4rem;color:var(--gold);box-shadow:0 0 0 1px var(--gold-dk)}
+
+    /* REPORTES CARDS */
+    .reports-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.2rem}
+    .report-card{background:var(--stone);box-shadow:0 0 0 2px var(--gold-dk),2px 2px 0 #000;animation:slide-up .4s ease forwards;transition:transform .1s}
+    .report-card:hover{transform:translate(-2px,-2px);box-shadow:0 0 0 2px var(--gold),4px 4px 0 #000}
+    .rc-hdr{background:var(--stone-md);border-bottom:2px solid var(--gold-dk);padding:.7rem 1rem;display:flex;justify-content:space-between;align-items:center}
+    .rc-id{font-family:var(--font-px);font-size:.26rem;color:var(--parch-dim);letter-spacing:.05em}
+    .rc-date{font-family:var(--font-r);font-size:.9rem;color:var(--parch-dk)}
+    .rc-title{font-family:var(--font-px);font-size:.3rem;color:var(--gold-br);letter-spacing:.06em;line-height:1.7}
+    .rc-body{padding:1rem}
+    .rc-summary{font-family:var(--font-r);font-size:1rem;color:var(--parch-dk);line-height:1.5;margin-bottom:.7rem}
+    .rc-stats{display:flex;gap:.5rem;flex-wrap:wrap}
+    .rc-stat{font-family:var(--font-r);font-size:.88rem;padding:0 .5rem}
+
+    /* EXPORT */
+    .export-bar{display:flex;gap:.7rem;margin-bottom:1.2rem;flex-wrap:wrap;align-items:center}
+    .export-label{font-family:var(--font-px);font-size:.26rem;color:var(--parch-dim);letter-spacing:.05em}
+    .exp-btn{background:var(--stone-lt);border:none;box-shadow:0 0 0 2px var(--gold-dk),2px 2px 0 #000;color:var(--gold);padding:.35rem .8rem;font-family:var(--font-px);font-size:.26rem;cursor:pointer;transition:all .1s;letter-spacing:.04em}
+    .exp-btn:hover{box-shadow:0 0 0 2px var(--gold),2px 2px 0 #000;color:var(--gold-br);transform:translate(-1px,-1px)}
+
+    footer{border-top:3px solid var(--gold-dk);background:var(--stone-dk);padding:.75rem 1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+    .f-left{font-family:var(--font-r);font-size:.9rem;color:var(--parch-dim);display:flex;gap:2rem}
+    .f-right{font-family:var(--font-px);font-size:.22rem;color:var(--parch-dim)}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-emblem">🛡</div>
+      <div><div class="logo-text">METASOC</div><div class="logo-sub">META + SOCIETAS</div></div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html"><span>⚔</span> CAMPAÑA</a></li>
+      <li><a href="filosofia.html"><span>📜</span> FILOSOFÍA</a></li>
+      <li><a href="combate.html"><span>🗡</span> COMBATE</a></li>
+      <li><a href="reportes.html" class="active"><span>📋</span> REPORTES</a></li>
+      <li><a href="acerca.html"><span>🏛</span> SENADO</a></li>
+      <li><a href="costs.html"><span>🪙</span> ARCAS</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="page-hero-title">📋 TABULARIUM — ARCHIVO IMPERIAL 📋</div>
+  <div class="page-hero-sub">Registro completo de metas y campañas</div>
+</div>
+
+<div class="page">
+
+  <!-- METAS TABLE -->
+  <div class="sec-title">Registro de Metas — Todas las Campañas</div>
+
+  <div class="filter-row">
+    <span class="fl">ESTADO:</span>
+    <button class="fb active" data-f="all">TODOS</button>
+    <button class="fb" data-f="victoria">VICTORIAS</button>
+    <button class="fb" data-f="en_batalla">EN BATALLA</button>
+    <button class="fb" data-f="pendiente">PENDIENTES</button>
+  </div>
+
+  <div class="export-bar">
+    <span class="export-label">EXPORTAR:</span>
+    <button class="exp-btn" onclick="exportCSV()">📄 CSV</button>
+    <button class="exp-btn" onclick="window.print()">🖨 IMPRIMIR</button>
+  </div>
+
+  <table class="metas-table" id="metas-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>TÍTULO</th>
+        <th>ESTADO</th>
+        <th>CATEGORÍA</th>
+        <th>PROGRESO</th>
+        <th>LEGIÓN</th>
+        <th>RESPONSABLE</th>
+        <th>FECHA LÍMITE</th>
+      </tr>
+    </thead>
+    <tbody id="metas-tbody"></tbody>
+  </table>
+
+  <!-- REPORTES -->
+  <div class="sec-title">Informes de Campaña</div>
+  <div class="reports-grid" id="reports-grid"></div>
+
+</div>
+
+<footer>
+  <div class="f-left"><span>Metasoc v2.0</span><span id="f-upd">—</span></div>
+  <div class="f-right">SPQR — SENATUS POPULUSQUE ROMANUS METASOC</div>
+</footer>
+
+<script>
+let D=null, currentFilter='all';
+
+const EC={victoria:'e-victoria',en_batalla:'e-batalla',pendiente:'e-pendiente',retirada:''};
+const PC={victoria:'var(--green)',en_batalla:'var(--red2)',pendiente:'var(--gold)',retirada:'#444'};
+
+async function loadData(){
+  D=await(await fetch('./data/metas.json')).json();
+  renderTable();
+  renderReportes();
+  const upd=new Date(D.meta.last_updated);
+  document.getElementById('f-upd').textContent='Actualizado: '+upd.toLocaleString('es',{dateStyle:'short',timeStyle:'short'});
+}
+
+function renderTable(){
+  const filtered=currentFilter==='all'?D.metas:D.metas.filter(m=>m.estado===currentFilter);
+  document.getElementById('metas-tbody').innerHTML=filtered.map(m=>`
+    <tr>
+      <td style="font-family:var(--font-px);font-size:.25rem;color:var(--parch-dim)">${m.id}</td>
+      <td>${m.titulo}</td>
+      <td><span class="estado-badge ${EC[m.estado]}">${m.estado.replace('_',' ').toUpperCase()}</span></td>
+      <td><span class="cat-tag">${m.categoria}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:.4rem">
+          <div class="prog-mini"><div class="prog-mini-fill" style="width:${m.progreso}%;background:${PC[m.estado]}"></div></div>
+          <span style="font-size:.85rem;color:var(--parch-dim)">${m.progreso}%</span>
+        </div>
+      </td>
+      <td style="color:var(--parch-dk)">${m.legion}</td>
+      <td style="color:var(--parch-dk)">${m.responsable}</td>
+      <td style="font-family:var(--font-r);color:var(--parch-dim)">${m.fecha_limite}</td>
+    </tr>`).join('');
+}
+
+function renderReportes(){
+  document.getElementById('reports-grid').innerHTML=D.reportes.map((r,i)=>`
+    <div class="report-card" style="animation-delay:${i*60}ms">
+      <div class="rc-hdr">
+        <div><div class="rc-id">${r.id}</div><div class="rc-title" style="margin-top:.25rem">${r.titulo}</div></div>
+        <div class="rc-date">${r.fecha}</div>
+      </div>
+      <div class="rc-body">
+        <div class="rc-summary">${r.resumen}</div>
+        <div class="rc-stats">
+          <span class="rc-stat" style="box-shadow:0 0 0 2px var(--green);color:var(--green)">🏆 ${r.victorias_nuevas} victorias</span>
+          <span class="rc-stat" style="box-shadow:0 0 0 2px var(--red2);color:var(--red3)">⚔ ${r.batallas_activas} batallas</span>
+          <span class="rc-stat" style="box-shadow:0 0 0 2px #4488cc;color:#4488cc">🔥 moral ${r.indice_moral}/100</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+document.querySelectorAll('[data-f]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('[data-f]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter=btn.dataset.f;
+    renderTable();
+  });
+});
+
+function exportCSV(){
+  if(!D) return;
+  const rows=[['ID','Titulo','Estado','Categoria','Progreso','Legion','Responsable','Fecha Limite','Fecha Victoria']];
+  D.metas.forEach(m=>rows.push([m.id,'"'+m.titulo+'"',m.estado,m.categoria,m.progreso+'%',m.legion,m.responsable,m.fecha_limite,m.fecha_victoria||'']));
+  const csv=rows.map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='metasoc-metas.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+window.addEventListener('load',loadData);
+</script>
+</body>
+</html>

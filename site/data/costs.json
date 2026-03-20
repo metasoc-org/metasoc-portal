@@ -1,0 +1,30 @@
+{
+  "_doc": "Arcas del Imperio Metasoc. Ver DATA_SCHEMA.md para agregar meses.",
+  "monthly_costs": [
+    {
+      "month": "2025-03",
+      "label": "Mar 2025",
+      "items": [
+        { "category": "infraestructura", "name": "Cloudflare Pages", "amount": 0, "notes": "Plan gratuito" },
+        { "category": "infraestructura", "name": "GitHub (repo privado)", "amount": 0, "notes": "Plan gratuito" },
+        { "category": "infraestructura", "name": "Dominio .com", "amount": 1.08, "notes": "Prorrateado mensual ($13/año)" },
+        { "category": "herramientas", "name": "Ollama (IA local)", "amount": 0, "notes": "Open source, local" },
+        { "category": "herramientas", "name": "VS Code", "amount": 0, "notes": "Gratuito" },
+        { "category": "operaciones", "name": "Electricidad servidor local", "amount": 4.50, "notes": "Estimado 24/7 notebook" },
+        { "category": "operaciones", "name": "Tiempo de desarrollo", "amount": 0, "notes": "Inversión interna" }
+      ]
+    },
+    {
+      "month": "2025-04",
+      "label": "Abr 2025",
+      "items": [
+        { "category": "infraestructura", "name": "Cloudflare Pages", "amount": 0, "notes": "Plan gratuito" },
+        { "category": "infraestructura", "name": "GitHub", "amount": 0, "notes": "Plan gratuito" },
+        { "category": "infraestructura", "name": "Dominio .com", "amount": 1.08, "notes": "Prorrateado mensual" },
+        { "category": "herramientas", "name": "Ollama (IA local)", "amount": 0, "notes": "Open source" },
+        { "category": "herramientas", "name": "Librerías externas (CDN)", "amount": 0, "notes": "Chart.js, Google Fonts — CDN público" },
+        { "category": "operaciones", "name": "Electricidad servidor local", "amount": 4.50, "notes": "Estimado mensual" }
+      ]
+    }
+  ]
+}
