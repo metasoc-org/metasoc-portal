@@ -1,0 +1,22 @@
+{
+  "meta": {
+    "last_updated": "2025-03-01T00:00:00Z",
+    "currency": "USD",
+    "organization": "MetaSOC"
+  },
+  "monthly_costs": [
+    {
+      "month": "2025-03",
+      "label": "Mar 2025",
+      "items": [
+        { "category": "infraestructura", "name": "Cloudflare Pages", "amount": 0, "notes": "Plan gratuito" },
+        { "category": "infraestructura", "name": "GitHub (repo público)", "amount": 0, "notes": "Plan gratuito" },
+        { "category": "infraestructura", "name": "Dominio .com (prorrateado)", "amount": 1.20, "notes": "~$14.40/año" },
+        { "category": "herramientas", "name": "VirusTotal API", "amount": 0, "notes": "Tier gratuito" },
+        { "category": "herramientas", "name": "AbuseIPDB API", "amount": 0, "notes": "Tier gratuito" },
+        { "category": "operaciones", "name": "Electricidad notebook (est.)", "amount": 4.50, "notes": "Estimado 8h/día" },
+        { "category": "operaciones", "name": "Internet (prorrateo)", "amount": 8.00, "notes": "Estimado uso SOC" }
+      ]
+    }
+  ]
+}

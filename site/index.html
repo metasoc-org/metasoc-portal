@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MetaSOC — Reino de Seguridad Digital</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --dungeon:     #080608;
+      --stone:       #13100f;
+      --stone-mid:   #1e1a17;
+      --stone-light: #2c2520;
+      --gold:        #c8960c;
+      --gold-bright: #f0c040;
+      --gold-dark:   #7a5a08;
+      --torch:       #e8621a;
+      --torch-glow:  #ffaa44;
+      --parchment:   #d4b896;
+      --parch-dim:   #7a6548;
+      --rune:        #00cc66;
+      --blood:       #cc2200;
+      --royal:       #8855cc;
+      --sky:         #4499cc;
+      --font-pixel:  'Press Start 2P', monospace;
+      --font-rune:   'VT323', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { image-rendering: pixelated; }
+
+    body {
+      background-color: var(--dungeon);
+      background-image:
+        linear-gradient(rgba(255,150,50,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,150,50,0.018) 1px, transparent 1px);
+      background-size: 8px 8px;
+      color: var(--parchment);
+      font-family: var(--font-rune);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    @keyframes torch-flicker {
+      0%,100% { text-shadow: 0 0 8px var(--torch), 0 0 20px var(--torch-glow); opacity:1; }
+      25%     { text-shadow: 0 0 4px var(--torch), 0 0 10px var(--torch-glow); opacity:.88; }
+      50%     { text-shadow: 0 0 12px var(--torch), 0 0 28px var(--torch-glow); opacity:.95; }
+      75%     { text-shadow: 0 0 6px var(--torch), 0 0 16px var(--torch-glow); opacity:.82; }
+    }
+
+    @keyframes gem-pulse {
+      0%,100% { box-shadow: 0 0 6px var(--rune); }
+      50%     { box-shadow: 0 0 14px var(--rune); }
+    }
+
+    @keyframes boot-bar {
+      from { width: 0; }
+      to   { width: 100%; }
+    }
+
+    @keyframes entry-in {
+      from { opacity:0; transform:translateX(8px); }
+      to   { opacity:1; transform:translateX(0); }
+    }
+
+    /* ── HEADER ─────────────────────────────── */
+    header {
+      display: grid;
+      grid-template-columns: 60px 1fr auto;
+      align-items: center;
+      padding: 0.65rem 1.5rem;
+      background: var(--stone);
+      border-bottom: 3px solid var(--gold-dark);
+      box-shadow: 0 2px 0 var(--dungeon), 0 3px 0 var(--gold);
+      position: sticky; top: 0; z-index: 200;
+    }
+
+    .torch-icon {
+      font-size: 1.5rem;
+      animation: torch-flicker 0.9s ease-in-out infinite;
+    }
+
+    .header-title {
+      text-align: center;
+    }
+
+    .title-main {
+      font-family: var(--font-pixel);
+      font-size: 0.85rem;
+      color: var(--gold-bright);
+      letter-spacing: 0.12em;
+      animation: torch-flicker 1.4s ease-in-out infinite;
+    }
+
+    .title-sub {
+      font-family: var(--font-rune);
+      font-size: 0.95rem;
+      color: var(--parch-dim);
+      letter-spacing: 0.2em;
+      margin-top: 2px;
+    }
+
+    .header-status {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 3px;
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-pixel);
+      font-size: 0.3rem;
+      color: var(--rune);
+      letter-spacing: 0.08em;
+    }
+
+    .live-gem {
+      width: 8px; height: 8px;
+      background: var(--rune);
+      animation: gem-pulse 1s ease-in-out infinite;
+    }
+
+    #last-update {
+      font-family: var(--font-rune);
+      font-size: 0.85rem;
+      color: var(--parch-dim);
+    }
+
+    /* ── FILTER BAR ─────────────────────────── */
+    .guild-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1.5rem;
+      background: var(--stone-mid);
+      border-bottom: 2px solid var(--gold-dark);
+      flex-wrap: wrap;
+    }
+
+    .guild-label {
+      font-family: var(--font-pixel);
+      font-size: 0.32rem;
+      color: var(--gold);
+      letter-spacing: 0.08em;
+    }
+
+    .guild-sep { color: var(--gold-dark); font-size: 1.2rem; margin: 0 0.3rem; line-height: 1; }
+
+    .px-btn {
+      background: var(--stone-light);
+      border: none;
+      box-shadow: 0 0 0 2px var(--gold-dark), 2px 2px 0 #000;
+      color: var(--parch-dim);
+      padding: 0.3rem 0.75rem;
+      font-family: var(--font-pixel);
+      font-size: 0.3rem;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s, color 0.1s;
+    }
+
+    .px-btn:hover {
+      box-shadow: 0 0 0 2px var(--gold), 2px 2px 0 #000;
+      color: var(--gold-bright);
+      transform: translate(-1px,-1px);
+    }
+
+    .px-btn:active { transform: translate(1px,1px); }
+
+    .px-btn.active       { box-shadow: 0 0 0 2px var(--gold);  color: var(--gold-bright);  background: var(--stone); }
+    .px-btn.active-blood { box-shadow: 0 0 0 2px var(--blood); color: #ff4422;             background: var(--stone); }
+    .px-btn.active-rune  { box-shadow: 0 0 0 2px var(--rune);  color: var(--rune);         background: var(--stone); }
+
+    /* ── MAIN LAYOUT ─────────────────────────── */
+    main {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      grid-template-rows: auto 1fr auto;
+      height: calc(100vh - 96px);
+    }
+
+    /* ── STAT TABLETS ────────────────────────── */
+    .stat-row {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(5,1fr);
+      border-bottom: 3px solid var(--gold-dark);
+      gap: 1px;
+      background: var(--gold-dark);
+    }
+
+    .stat-tablet {
+      background: var(--stone);
+      padding: 0.7rem 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-tablet::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+      background: var(--tab-col, var(--gold));
+      box-shadow: 0 0 8px var(--tab-col, var(--gold));
+    }
+
+    .stat-ico { font-size: 1rem; margin-bottom: 0.3rem; display: block; }
+
+    .stat-lbl {
+      font-family: var(--font-pixel);
+      font-size: 0.27rem;
+      color: var(--parch-dim);
+      letter-spacing: 0.06em;
+      line-height: 1.8;
+      margin-bottom: 0.4rem;
+    }
+
+    .stat-val {
+      font-family: var(--font-rune);
+      font-size: 2.4rem;
+      color: var(--tab-col, var(--gold-bright));
+      line-height: 1;
+    }
+
+    .hp-track {
+      height: 6px;
+      background: var(--stone-light);
+      box-shadow: inset 1px 1px 0 #000;
+      margin-top: 0.4rem;
+    }
+
+    .hp-fill {
+      height: 100%;
+      background: repeating-linear-gradient(
+        90deg,
+        var(--tab-col, var(--gold)) 0px,
+        var(--tab-col, var(--gold)) 5px,
+        rgba(0,0,0,0.35) 5px,
+        rgba(0,0,0,0.35) 7px
+      );
+      width: 0%;
+      transition: width 1.2s ease;
+    }
+
+    /* ── MAP ─────────────────────────────────── */
+    .map-wrap {
+      position: relative;
+      background: var(--stone);
+      border-right: 3px solid var(--gold-dark);
+    }
+
+    #world-map {
+      width: 100%; height: 100%;
+      filter: sepia(0.6) hue-rotate(-20deg) brightness(0.7) contrast(1.15);
+    }
+
+    .map-label {
+      position: absolute;
+      bottom: 1rem; left: 1rem;
+      font-family: var(--font-pixel);
+      font-size: 0.35rem;
+      color: var(--gold-bright);
+      z-index: 500;
+      background: var(--stone);
+      padding: 0.35rem 0.7rem;
+      box-shadow: 0 0 0 2px var(--gold-dark), 2px 2px 0 #000;
+      letter-spacing: 0.08em;
+      animation: torch-flicker 2s ease-in-out infinite;
+    }
+
+    /* ── SIDEBAR ─────────────────────────────── */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--stone);
+    }
+
+    .s-panel { padding: 0.7rem 1rem; border-bottom: 2px solid var(--gold-dark); flex-shrink: 0; }
+
+    .s-title {
+      font-family: var(--font-pixel);
+      font-size: 0.35rem;
+      color: var(--gold-bright);
+      letter-spacing: 0.1em;
+      margin-bottom: 0.7rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .s-title::before {
+      content: '';
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--gold);
+      box-shadow: 0 0 6px var(--gold);
+    }
+
+    /* THREAT BARS */
+    .threat-bars { display: flex; flex-direction: column; gap: 0.5rem; }
+    .threat-row  { display: flex; flex-direction: column; gap: 0.2rem; }
+    .threat-meta { display: flex; justify-content: space-between; font-size: 0.95rem; }
+    .threat-name { color: var(--parchment); }
+    .threat-cnt  { color: var(--gold-bright); }
+
+    .px-bar-track {
+      height: 8px;
+      background: var(--stone-light);
+      box-shadow: inset 1px 1px 0 #000;
+    }
+
+    .px-bar-fill {
+      height: 100%;
+      background: repeating-linear-gradient(
+        90deg,
+        var(--blood) 0, var(--blood) 5px,
+        rgba(0,0,0,0.3) 5px, rgba(0,0,0,0.3) 7px
+      );
+      transition: width 1s ease;
+    }
+
+    /* QUEST LOG */
+    .quest-log-hdr { padding: 0.7rem 1rem 0.3rem; border-bottom: 1px solid var(--gold-dark); flex-shrink: 0; }
+
+    .quest-log {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .quest-log::-webkit-scrollbar { width: 8px; }
+    .quest-log::-webkit-scrollbar-track { background: var(--dungeon); }
+    .quest-log::-webkit-scrollbar-thumb { background: var(--gold-dark); box-shadow: inset 0 0 0 1px var(--gold); }
+
+    .quest-entry {
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid rgba(122,90,8,0.25);
+      cursor: pointer;
+      transition: background 0.1s;
+      animation: entry-in 0.3s ease forwards;
+    }
+
+    .quest-entry:hover { background: rgba(200,150,12,0.05); }
+
+    .qe-hdr {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.2rem;
+    }
+
+    .qe-id   { font-family: var(--font-pixel); font-size: 0.27rem; color: var(--parch-dim); }
+    .qe-date { font-family: var(--font-rune); font-size: 0.82rem; color: var(--parch-dim); }
+    .qe-type { font-family: var(--font-pixel); font-size: 0.3rem; color: var(--parchment); line-height: 1.7; }
+
+    .qe-tags {
+      display: flex;
+      gap: 0.35rem;
+      margin-top: 0.3rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .px-tag { font-family: var(--font-rune); font-size: 0.88rem; padding: 0 0.4rem; }
+
+    .t-edu  { box-shadow: 0 0 0 2px var(--sky);      color: var(--sky); }
+    .t-gov  { box-shadow: 0 0 0 2px var(--gold);     color: var(--gold-bright); }
+    .t-pyme { box-shadow: 0 0 0 2px var(--rune);     color: var(--rune); }
+
+    .s-crit  { box-shadow: 0 0 0 2px var(--blood);   color: #ff4422; }
+    .s-alta  { box-shadow: 0 0 0 2px #dd6600;        color: #ff8833; }
+    .s-media { box-shadow: 0 0 0 2px #aa8800;        color: #ffcc22; }
+    .s-baja  { box-shadow: 0 0 0 2px var(--parch-dim); color: var(--parch-dim); }
+
+    .qe-country { font-family: var(--font-rune); font-size: 0.82rem; color: var(--parch-dim); margin-left: auto; }
+    .qe-resolved { font-family: var(--font-pixel); font-size: 0.25rem; color: var(--rune); }
+
+    /* TREASURY */
+    .treasury { padding: 0.7rem 1rem; border-top: 2px solid var(--gold-dark); flex-shrink: 0; }
+
+    .treasury-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 0.7rem; }
+
+    .tstone {
+      background: var(--stone-light);
+      box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #333;
+      padding: 0.5rem 0.6rem;
+      position: relative;
+    }
+
+    .tstone::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: var(--ts-col, var(--gold));
+    }
+
+    .ts-lbl { font-family: var(--font-pixel); font-size: 0.26rem; color: var(--parch-dim); line-height: 1.9; margin-bottom: 0.25rem; }
+    .ts-val { font-family: var(--font-rune); font-size: 1.4rem; color: var(--ts-col, var(--gold-bright)); }
+
+    .sparkline { display: flex; align-items: flex-end; gap: 3px; height: 24px; margin-bottom: 0.4rem; }
+
+    .spark-b {
+      flex: 1;
+      border-top: 2px solid var(--gold-dark);
+      transition: all 0.5s ease;
+    }
+
+    .spark-b.hot { border-top-color: var(--torch); box-shadow: 0 -2px 4px var(--torch); }
+
+    .spark-lbl {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-rune);
+      font-size: 0.78rem;
+      color: var(--parch-dim);
+      margin-bottom: 0.6rem;
+    }
+
+    .treasury-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      background: var(--stone-light);
+      border: none;
+      box-shadow: 0 0 0 2px var(--gold-dark), 2px 2px 0 #000;
+      padding: 0.45rem 0.8rem;
+      font-family: var(--font-pixel);
+      font-size: 0.27rem;
+      color: var(--gold);
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.1s;
+    }
+
+    .treasury-btn:hover {
+      box-shadow: 0 0 0 2px var(--gold), 2px 2px 0 #000;
+      color: var(--gold-bright);
+      transform: translate(-1px,-1px);
+    }
+
+    /* ── HERALD BAR ──────────────────────────── */
+    .herald {
+      grid-column: 1/-1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.4rem 1.5rem;
+      background: var(--stone-mid);
+      border-top: 3px solid var(--gold-dark);
+      font-family: var(--font-rune);
+      font-size: 0.9rem;
+      color: var(--parch-dim);
+    }
+
+    .herald-left { display: flex; gap: 2rem; }
+
+    .legend { display: flex; gap: 1rem; }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.88rem; }
+    .legend-gem { width: 8px; height: 8px; }
+
+    /* ── BOOT SCREEN ─────────────────────────── */
+    #boot {
+      position: fixed; inset: 0;
+      background: var(--dungeon);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      gap: 1.5rem;
+      transition: opacity 0.4s;
+    }
+
+    .boot-logo {
+      font-family: var(--font-pixel);
+      font-size: 1.4rem;
+      color: var(--gold-bright);
+      letter-spacing: 0.2em;
+      animation: torch-flicker 1s ease-in-out infinite;
+    }
+
+    .boot-sub {
+      font-family: var(--font-rune);
+      font-size: 1.5rem;
+      color: var(--parch-dim);
+      letter-spacing: 0.25em;
+    }
+
+    .boot-track {
+      width: 280px; height: 16px;
+      background: var(--stone-light);
+      box-shadow: 0 0 0 2px var(--gold-dark), 2px 2px 0 #000;
+    }
+
+    .boot-fill {
+      height: 100%;
+      background: repeating-linear-gradient(
+        90deg,
+        var(--gold) 0, var(--gold) 8px,
+        rgba(0,0,0,0.3) 8px, rgba(0,0,0,0.3) 10px
+      );
+      animation: boot-bar 2.2s ease forwards;
+    }
+
+    .boot-msg {
+      font-family: var(--font-pixel);
+      font-size: 0.35rem;
+      color: var(--torch);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── LEAFLET OVERRIDES ───────────────────── */
+    .leaflet-popup-content-wrapper {
+      background: var(--stone) !important;
+      border: none !important;
+      box-shadow: 0 0 0 2px var(--gold-dark), 0 0 0 4px #000, 0 0 0 6px var(--gold) !important;
+      border-radius: 0 !important;
+      padding: 0 !important;
+    }
+    .leaflet-popup-content { margin: 0 !important; }
+    .leaflet-popup-tip-container { display: none !important; }
+    .leaflet-control-zoom a {
+      background: var(--stone) !important;
+      color: var(--gold-bright) !important;
+      border: 2px solid var(--gold-dark) !important;
+      border-radius: 0 !important;
+      font-family: var(--font-pixel) !important;
+      font-size: 0.7rem !important;
+    }
+
+    @media (max-width: 900px) {
+      main { grid-template-columns: 1fr; height: auto; }
+      .map-wrap { height: 50vh; }
+      .stat-row { grid-template-columns: repeat(3,1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- BOOT SCREEN -->
+<div id="boot">
+  <div class="boot-logo">⚔ MetaSOC ⚔</div>
+  <div class="boot-sub">◆ REINO DE SEGURIDAD DIGITAL ◆</div>
+  <div class="boot-track"><div class="boot-fill"></div></div>
+  <div class="boot-msg">CARGANDO MAPA DEL REINO...</div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="torch-icon">🔥</div>
+  <div class="header-title">
+    <div class="title-main">MetaSOC</div>
+    <div class="title-sub">CENTRO DE OPERACIONES // LATAM</div>
+  </div>
+  <div class="header-status">
+    <div class="live-badge"><div class="live-gem"></div>GUARDIA ACTIVA</div>
+    <div id="last-update">—</div>
+  </div>
+</header>
+
+<!-- GUILD BAR -->
+<div class="guild-bar">
+  <span class="guild-label">⚜ REINO:</span>
+  <button class="px-btn active" data-filter="all">TODOS</button>
+  <button class="px-btn" data-filter="educacion" data-style="active">ACADEMIA</button>
+  <button class="px-btn" data-filter="gobierno" data-style="active-blood">CORONA</button>
+  <button class="px-btn" data-filter="pyme" data-style="active-rune">GREMIO</button>
+  <span class="guild-sep">║</span>
+  <span class="guild-label">☠ AMENAZA:</span>
+  <button class="px-btn" data-type="all">TODAS</button>
+  <button class="px-btn" data-type="phishing">ENGAÑO</button>
+  <button class="px-btn" data-type="ip_maliciosa">PORTAL OSCURO</button>
+  <button class="px-btn" data-type="ransomware">MALDICION</button>
+  <button class="px-btn" data-type="ddos">ASEDIO</button>
+  <button class="px-btn" data-type="malware">PLAGA</button>
+</div>
+
+<!-- MAIN -->
+<main>
+
+  <!-- STAT ROW -->
+  <div class="stat-row">
+    <div class="stat-tablet" style="--tab-col:var(--gold-bright)">
+      <span class="stat-ico">🏰</span>
+      <div class="stat-lbl">ALIADOS DEL REINO</div>
+      <div class="stat-val" id="stat-orgs">0</div>
+      <div class="hp-track"><div class="hp-fill" id="bar-orgs" style="--tab-col:var(--gold-bright)"></div></div>
+    </div>
+    <div class="stat-tablet" style="--tab-col:var(--blood)">
+      <span class="stat-ico">☠</span>
+      <div class="stat-lbl">AMENAZAS TOTALES</div>
+      <div class="stat-val" id="stat-total">0</div>
+      <div class="hp-track"><div class="hp-fill" id="bar-total" style="--tab-col:var(--blood)"></div></div>
+    </div>
+    <div class="stat-tablet" style="--tab-col:var(--torch)">
+      <span class="stat-ico">⚔</span>
+      <div class="stat-lbl">BATALLAS ACTIVAS</div>
+      <div class="stat-val" id="stat-active">0</div>
+      <div class="hp-track"><div class="hp-fill" id="bar-active" style="--tab-col:var(--torch)"></div></div>
+    </div>
+    <div class="stat-tablet" style="--tab-col:var(--rune)">
+      <span class="stat-ico">🏆</span>
+      <div class="stat-lbl">VICTORIAS</div>
+      <div class="stat-val" id="stat-resolved">0</div>
+      <div class="hp-track"><div class="hp-fill" id="bar-resolved" style="--tab-col:var(--rune)"></div></div>
+    </div>
+    <div class="stat-tablet" style="--tab-col:var(--royal)">
+      <span class="stat-ico">🗺</span>
+      <div class="stat-lbl">REINOS CUBIERTOS</div>
+      <div class="stat-val" id="stat-countries">0</div>
+      <div class="hp-track"><div class="hp-fill" id="bar-countries" style="--tab-col:var(--royal)"></div></div>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div class="map-wrap">
+    <div id="world-map"></div>
+    <div class="map-label">⚔ EL MAPA DEL REINO CONOCIDO</div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <div class="s-panel">
+      <div class="s-title">Tipos de Amenaza</div>
+      <div class="threat-bars" id="type-bars"></div>
+    </div>
+
+    <div class="quest-log-hdr">
+      <div class="s-title">Pergamino de Amenazas</div>
+    </div>
+
+    <div class="quest-log" id="incident-list"></div>
+
+    <div class="treasury">
+      <div class="s-title">Arcas del Reino</div>
+      <div class="treasury-grid">
+        <div class="tstone" style="--ts-col:var(--torch)">
+          <div class="ts-lbl">ORO / MES ACTUAL</div>
+          <div class="ts-val" id="c-current">—</div>
+        </div>
+        <div class="tstone" style="--ts-col:var(--rune)">
+          <div class="ts-lbl">INFRAESTRUCTURA</div>
+          <div class="ts-val">$0.00</div>
+        </div>
+      </div>
+      <div class="sparkline" id="costs-sparkline"></div>
+      <div class="spark-lbl" id="spark-labels"></div>
+      <a href="./costs.html" class="treasury-btn">
+        VER LIBRO DE CUENTAS <span>▶</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- HERALD BAR -->
+  <div class="herald">
+    <div class="herald-left">
+      <span>MetaSOC v1.0</span>
+      <span id="footer-count">0 amenazas</span>
+      <span>Próximo heraldo: <span id="next-update">—</span></span>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-gem" style="background:var(--sky);box-shadow:0 0 4px var(--sky)"></div>Academia</div>
+      <div class="legend-item"><div class="legend-gem" style="background:var(--gold-bright);box-shadow:0 0 4px var(--gold)"></div>Corona</div>
+      <div class="legend-item"><div class="legend-gem" style="background:var(--rune);box-shadow:0 0 4px var(--rune)"></div>Gremio</div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const DATA_URL  = './data/incidents.json';
+const COSTS_URL = './data/costs.json';
+
+const INDUSTRY_COLORS = { educacion:'#4499cc', gobierno:'#c8960c', pyme:'#00cc66' };
+
+const TYPE_LABELS = {
+  phishing:            'ENGANO (Phishing)',
+  ip_maliciosa:        'PORTAL OSCURO (IP Mal.)',
+  ransomware:          'MALDICION (Ransomware)',
+  ddos:                'ASEDIO (DDoS)',
+  malware:             'PLAGA (Malware)',
+  credential_stuffing: 'ROBO DE IDENTIDAD',
+};
+
+let allData = null, map = null, markers = [];
+let activeFilter = { sector:'all', type:'all' };
+
+function initMap() {
+  map = L.map('world-map', { center:[10,-60], zoom:3, minZoom:2, maxZoom:8, attributionControl:false });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { subdomains:'abcd', maxZoom:19 }).addTo(map);
+}
+
+function animateNum(el, target, dur=1000) {
+  const t0=Date.now(), from=parseInt(el.textContent)||0;
+  const step=()=>{ const p=Math.min((Date.now()-t0)/dur,1), e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(from+(target-from)*e); if(p<1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+
+function getFiltered(incs) {
+  return incs.filter(i=>(activeFilter.sector==='all'||i.industry===activeFilter.sector)
+                      &&(activeFilter.type  ==='all'||i.type    ===activeFilter.type));
+}
+
+function renderStats(filtered, data) {
+  const active  = filtered.filter(i=>!i.resolved).length;
+  const resolved= filtered.filter(i=> i.resolved).length;
+  const countries=new Set(filtered.map(i=>i.country)).size;
+  const total = filtered.length;
+
+  animateNum(document.getElementById('stat-orgs'),     data.meta.total_organizations_helped);
+  animateNum(document.getElementById('stat-total'),    total);
+  animateNum(document.getElementById('stat-active'),   active);
+  animateNum(document.getElementById('stat-resolved'), resolved);
+  animateNum(document.getElementById('stat-countries'),countries);
+
+  document.getElementById('footer-count').textContent = total+' amenazas';
+
+  setTimeout(()=>{
+    document.getElementById('bar-orgs').style.width     = '75%';
+    document.getElementById('bar-total').style.width    = '100%';
+    document.getElementById('bar-active').style.width   = total ? (active/total*100)+'%' : '0%';
+    document.getElementById('bar-resolved').style.width = total ? (resolved/total*100)+'%' : '0%';
+    document.getElementById('bar-countries').style.width= '55%';
+  }, 400);
+}
+
+function renderMap(filtered) {
+  markers.forEach(m=>map.removeLayer(m));
+  markers=[];
+  filtered.forEach(inc=>{
+    const color=INDUSTRY_COLORS[inc.industry]||'#fff';
+    const sz=inc.severity==='critica'?14:inc.severity==='alta'?10:7;
+    const icon=L.divIcon({
+      html:`<div style="width:${sz*2}px;height:${sz*2}px;background:${color};box-shadow:0 0 0 2px #000,0 0 8px ${color};"></div>`,
+      className:'',iconSize:[sz*2,sz*2],iconAnchor:[sz,sz]
+    });
+    const mk=L.marker([inc.lat,inc.lng],{icon}).addTo(map);
+    mk.bindPopup(`<div style="font-family:'VT323',monospace;font-size:1rem;background:#13100f;padding:0.8rem;min-width:180px;color:#d4b896;line-height:1.6">
+      <div style="font-family:'Press Start 2P',monospace;font-size:0.45rem;color:#f0c040;margin-bottom:0.4rem">${inc.id}</div>
+      <div>${inc.country_name} &mdash; ${inc.date}</div>
+      <div><span style="color:#c8960c">AMENAZA:</span> ${TYPE_LABELS[inc.type]||inc.type}</div>
+      <div><span style="color:#c8960c">REINO:</span> ${inc.industry.toUpperCase()}</div>
+      <div><span style="color:#c8960c">NIVEL:</span> <span style="color:${inc.severity==='critica'?'#cc2200':'#d4b896'}">${inc.severity.toUpperCase()}</span></div>
+      <div style="color:#7a6548;font-size:0.9rem;margin-top:0.3rem">${inc.description}</div>
+    </div>`,{className:''});
+    markers.push(mk);
+  });
+}
+
+function renderTypeBars(filtered) {
+  const counts={};
+  filtered.forEach(i=>{ counts[i.type]=(counts[i.type]||0)+1; });
+  const max=Math.max(...Object.values(counts),1);
+  document.getElementById('type-bars').innerHTML=Object.entries(counts)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([t,c])=>`<div class="threat-row">
+      <div class="threat-meta"><span class="threat-name">${TYPE_LABELS[t]||t}</span><span class="threat-cnt">${c}</span></div>
+      <div class="px-bar-track"><div class="px-bar-fill" style="width:${(c/max*100).toFixed(1)}%"></div></div>
+    </div>`).join('');
+}
+
+function renderQuestLog(filtered) {
+  const sorted=[...filtered].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  document.getElementById('incident-list').innerHTML=sorted.map((inc,i)=>{
+    const indTag=inc.industry==='educacion'?'t-edu':inc.industry==='gobierno'?'t-gov':'t-pyme';
+    const sevTag='s-'+inc.severity;
+    return `<div class="quest-entry" style="animation-delay:${i*25}ms" onclick="focusMap(${inc.lat},${inc.lng})">
+      <div class="qe-hdr"><span class="qe-id">${inc.id}</span><span class="qe-date">${inc.date}</span></div>
+      <div class="qe-type">${TYPE_LABELS[inc.type]||inc.type}</div>
+      <div class="qe-tags">
+        <span class="px-tag ${indTag}">${inc.industry}</span>
+        <span class="px-tag ${sevTag}">${inc.severity}</span>
+        <span class="qe-country">${inc.country_name}</span>
+        ${inc.resolved?'<span class="qe-resolved">✔ RESUELTO</span>':''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function focusMap(lat,lng){ map.setView([lat,lng],5,{animate:true}); }
+
+function renderAll(){
+  const f=getFiltered(allData.incidents);
+  renderStats(f,allData); renderMap(f); renderTypeBars(f); renderQuestLog(f);
+}
+
+document.querySelectorAll('[data-filter]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('[data-filter]').forEach(b=>b.className='px-btn');
+    btn.classList.add('px-btn',btn.dataset.style||'active');
+    activeFilter.sector=btn.dataset.filter; renderAll();
+  });
+});
+
+document.querySelectorAll('[data-type]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('[data-type]').forEach(b=>b.className='px-btn');
+    btn.classList.add('active'); activeFilter.type=btn.dataset.type; renderAll();
+  });
+});
+
+async function loadData(){
+  const res=await fetch(DATA_URL); allData=await res.json();
+  const upd=new Date(allData.meta.last_updated);
+  document.getElementById('last-update').textContent='Actualizado: '+upd.toLocaleString('es',{dateStyle:'short',timeStyle:'short'});
+  const nh=new Date(); nh.setHours(nh.getHours()+1,0,0,0);
+  document.getElementById('next-update').textContent=nh.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
+  renderAll();
+}
+
+async function loadCosts(){
+  try{
+    const res=await fetch(COSTS_URL); const data=await res.json();
+    const months=data.monthly_costs;
+    const totals=months.map(m=>m.items.reduce((s,i)=>s+i.amount,0));
+    const max=Math.max(...totals,1);
+    document.getElementById('c-current').textContent='$'+totals[totals.length-1].toFixed(2);
+    document.getElementById('costs-sparkline').innerHTML=months.map((m,i)=>{
+      const pct=Math.max((totals[i]/max)*100,8);
+      const hot=i===months.length-1;
+      return `<div class="spark-b ${hot?'hot':''}" style="height:${pct}%;background:${hot?'rgba(232,98,26,0.25)':'rgba(122,90,8,0.2)'}" title="${m.label}: $${totals[i].toFixed(2)}"></div>`;
+    }).join('');
+    document.getElementById('spark-labels').innerHTML=`<span>${months[0].label}</span><span>${months[months.length-1].label}</span>`;
+  }catch(e){}
+}
+
+window.addEventListener('load', async ()=>{
+  initMap();
+  await loadData();
+  loadCosts();
+  setTimeout(()=>{
+    const el=document.getElementById('boot');
+    el.style.opacity='0';
+    setTimeout(()=>el.remove(),400);
+  },2300);
+});
+</script>
+</body>
+</html>

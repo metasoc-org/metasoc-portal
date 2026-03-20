@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MetaSOC — Libro de Cuentas del Reino</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --dungeon:     #080608;
+      --stone:       #13100f;
+      --stone-mid:   #1e1a17;
+      --stone-light: #2c2520;
+      --gold:        #c8960c;
+      --gold-bright: #f0c040;
+      --gold-dark:   #7a5a08;
+      --torch:       #e8621a;
+      --torch-glow:  #ffaa44;
+      --parchment:   #d4b896;
+      --parch-dim:   #7a6548;
+      --rune:        #00cc66;
+      --blood:       #cc2200;
+      --royal:       #8855cc;
+      --font-pixel:  'Press Start 2P', monospace;
+      --font-rune:   'VT323', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { image-rendering: pixelated; }
+
+    body {
+      background-color: var(--dungeon);
+      background-image:
+        linear-gradient(rgba(255,150,50,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,150,50,0.018) 1px, transparent 1px);
+      background-size: 8px 8px;
+      color: var(--parchment);
+      font-family: var(--font-rune);
+      min-height: 100vh;
+    }
+
+    @keyframes torch-flicker {
+      0%,100% { text-shadow: 0 0 8px var(--torch), 0 0 20px var(--torch-glow); opacity:1; }
+      25%     { opacity:.88; }
+      50%     { opacity:.95; }
+      75%     { opacity:.82; }
+    }
+
+    @keyframes gem-pulse {
+      0%,100% { box-shadow: 0 0 6px var(--rune); }
+      50%     { box-shadow: 0 0 14px var(--rune); }
+    }
+
+    @keyframes boot-bar { from { width:0; } to { width:100%; } }
+
+    /* ── HEADER ─────────────────────────── */
+    header {
+      display: grid;
+      grid-template-columns: 60px 1fr auto;
+      align-items: center;
+      padding: 0.65rem 1.5rem;
+      background: var(--stone);
+      border-bottom: 3px solid var(--gold-dark);
+      box-shadow: 0 2px 0 var(--dungeon), 0 3px 0 var(--gold);
+      position: sticky; top: 0; z-index: 100;
+    }
+
+    .torch-icon { font-size: 1.5rem; animation: torch-flicker 0.9s ease-in-out infinite; }
+
+    .header-title { text-align: center; }
+    .title-main { font-family: var(--font-pixel); font-size: 0.85rem; color: var(--gold-bright); letter-spacing: 0.12em; animation: torch-flicker 1.4s ease-in-out infinite; }
+    .title-sub  { font-family: var(--font-rune); font-size: 0.95rem; color: var(--parch-dim); letter-spacing: 0.2em; margin-top: 2px; }
+
+    .back-btn {
+      background: var(--stone-light);
+      border: none;
+      box-shadow: 0 0 0 2px var(--gold-dark), 2px 2px 0 #000;
+      color: var(--parch-dim);
+      padding: 0.35rem 0.9rem;
+      font-family: var(--font-pixel);
+      font-size: 0.3rem;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.1s;
+    }
+
+    .back-btn:hover {
+      box-shadow: 0 0 0 2px var(--gold), 2px 2px 0 #000;
+      color: var(--gold-bright);
+      transform: translate(-1px,-1px);
+    }
+
+    /* ── PAGE WRAP ───────────────────────── */
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem;
+    }
+
+    .page-hdr {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--gold-dark);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .page-hdr-icon { font-size: 2rem; }
+
+    .page-title {
+      font-family: var(--font-pixel);
+      font-size: 0.7rem;
+      color: var(--gold-bright);
+      letter-spacing: 0.1em;
+      line-height: 1.8;
+      animation: torch-flicker 2s ease-in-out infinite;
+    }
+
+    .page-subtitle {
+      font-family: var(--font-rune);
+      font-size: 1rem;
+      color: var(--parch-dim);
+      letter-spacing: 0.15em;
+    }
+
+    /* ── SUMMARY TABLETS ─────────────────── */
+    .summary-row {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 1px;
+      background: var(--gold-dark);
+      border: 2px solid var(--gold-dark);
+      margin-bottom: 1.5rem;
+    }
+
+    .sum-tablet {
+      background: var(--stone);
+      padding: 1rem 1.2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sum-tablet::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+      background: var(--tab-col, var(--gold));
+      box-shadow: 0 0 8px var(--tab-col, var(--gold));
+    }
+
+    .sum-ico  { font-size: 1.1rem; margin-bottom: 0.3rem; }
+    .sum-lbl  { font-family: var(--font-pixel); font-size: 0.27rem; color: var(--parch-dim); letter-spacing: 0.06em; line-height: 1.9; margin-bottom: 0.4rem; }
+    .sum-val  { font-family: var(--font-rune); font-size: 2rem; color: var(--tab-col, var(--gold-bright)); line-height: 1; }
+    .sum-sub  { font-family: var(--font-rune); font-size: 0.85rem; color: var(--parch-dim); margin-top: 0.3rem; }
+
+    /* ── MONTH TABS ──────────────────────── */
+    .month-tabs-wrap {
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tabs-lbl { font-family: var(--font-pixel); font-size: 0.3rem; color: var(--gold); letter-spacing: 0.08em; margin-right: 0.3rem; }
+
+    .month-tab {
+      background: var(--stone-light);
+      border: none;
+      box-shadow: 0 0 0 2px var(--gold-dark), 2px 2px 0 #000;
+      color: var(--parch-dim);
+      padding: 0.35rem 0.9rem;
+      font-family: var(--font-pixel);
+      font-size: 0.28rem;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: all 0.1s;
+    }
+
+    .month-tab:hover  { box-shadow: 0 0 0 2px var(--gold-dark), 2px 2px 0 #000; color: var(--parchment); transform: translate(-1px,-1px); }
+    .month-tab.active { box-shadow: 0 0 0 2px var(--gold), 2px 2px 0 #000; color: var(--gold-bright); background: var(--stone); }
+
+    /* ── MAIN GRID ───────────────────────── */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    /* ── LEDGER (COST TABLE) ─────────────── */
+    .ledger {
+      background: var(--stone);
+      box-shadow: 0 0 0 2px var(--gold-dark), 2px 2px 0 #000;
+    }
+
+    .ledger-hdr {
+      padding: 0.8rem 1.2rem;
+      border-bottom: 2px solid var(--gold-dark);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .ledger-title {
+      font-family: var(--font-pixel);
+      font-size: 0.35rem;
+      color: var(--gold-bright);
+      letter-spacing: 0.08em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ledger-title::before {
+      content: '';
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--gold);
+      box-shadow: 0 0 6px var(--gold);
+    }
+
+    .ledger-total {
+      font-family: var(--font-rune);
+      font-size: 1.8rem;
+      color: var(--torch);
+    }
+
+    /* CATEGORY HEADER */
+    .cat-hdr {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 1.2rem;
+      background: rgba(200,150,12,0.06);
+      border-bottom: 1px solid var(--gold-dark);
+    }
+
+    .cat-name { font-family: var(--font-pixel); font-size: 0.3rem; letter-spacing: 0.08em; }
+    .cat-sub  { font-family: var(--font-rune); font-size: 0.9rem; color: var(--parch-dim); }
+
+    /* COST ROW */
+    .cost-row {
+      display: grid;
+      grid-template-columns: 1fr auto 180px;
+      gap: 1rem;
+      padding: 0.65rem 1.2rem;
+      border-bottom: 1px solid rgba(122,90,8,0.2);
+      align-items: center;
+      transition: background 0.1s;
+    }
+
+    .cost-row:hover { background: rgba(200,150,12,0.04); }
+    .cost-row:last-child { border-bottom: none; }
+
+    .cost-name   { font-family: var(--font-rune); font-size: 1rem; color: var(--parchment); }
+    .cost-amount { font-family: var(--font-rune); font-size: 1.05rem; font-weight: bold; text-align: right; white-space: nowrap; }
+    .amount-zero { color: var(--rune); }
+    .amount-paid { color: var(--torch); }
+    .cost-notes  { font-family: var(--font-rune); font-size: 0.88rem; color: var(--parch-dim); text-align: right; }
+
+    /* TREND */
+    .trend-badge {
+      font-family: var(--font-pixel);
+      font-size: 0.26rem;
+      padding: 0.15rem 0.4rem;
+    }
+
+    .trend-up   { box-shadow: 0 0 0 1px var(--blood);  color: #ff4422; }
+    .trend-down { box-shadow: 0 0 0 1px var(--rune);   color: var(--rune); }
+    .trend-same { box-shadow: 0 0 0 1px var(--parch-dim); color: var(--parch-dim); }
+
+    /* TRANSPARENCY NOTE */
+    .transparency {
+      margin-top: 1.2rem;
+      padding: 1rem 1.2rem;
+      background: rgba(200,150,12,0.04);
+      box-shadow: 0 0 0 2px var(--gold-dark);
+      font-family: var(--font-rune);
+      font-size: 0.95rem;
+      color: var(--parch-dim);
+      line-height: 1.7;
+    }
+
+    .transparency strong { color: var(--gold-bright); }
+
+    /* ── CHARTS COLUMN ───────────────────── */
+    .charts-col { display: flex; flex-direction: column; gap: 1.2rem; }
+
+    .chart-panel {
+      background: var(--stone);
+      box-shadow: 0 0 0 2px var(--gold-dark), 2px 2px 0 #000;
+    }
+
+    .chart-hdr {
+      padding: 0.7rem 1rem;
+      border-bottom: 2px solid var(--gold-dark);
+    }
+
+    .chart-title {
+      font-family: var(--font-pixel);
+      font-size: 0.32rem;
+      color: var(--gold-bright);
+      letter-spacing: 0.08em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chart-title::before {
+      content: '';
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--gold);
+      box-shadow: 0 0 6px var(--gold);
+    }
+
+    .chart-body { padding: 1rem; }
+
+    /* BAR CHART */
+    .bar-list { display: flex; flex-direction: column; gap: 0.7rem; }
+
+    .bar-entry { display: flex; flex-direction: column; gap: 0.2rem; cursor: pointer; }
+
+    .bar-meta {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-rune);
+      font-size: 0.9rem;
+    }
+
+    .bar-month { color: var(--parchment); }
+    .bar-val   { color: var(--gold-bright); }
+
+    .px-bar-track { height: 8px; background: var(--stone-light); box-shadow: inset 1px 1px 0 #000; }
+
+    .px-bar-fill {
+      height: 100%;
+      background: repeating-linear-gradient(
+        90deg,
+        var(--fill-col, var(--gold-dark)) 0, var(--fill-col, var(--gold-dark)) 5px,
+        rgba(0,0,0,0.3) 5px, rgba(0,0,0,0.3) 7px
+      );
+      transition: width 0.8s ease;
+    }
+
+    /* PIE CHART */
+    .pie-wrap { padding: 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.8rem; }
+
+    .pie-legend { width: 100%; display: flex; flex-direction: column; gap: 0.45rem; }
+
+    .legend-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-rune);
+      font-size: 0.9rem;
+    }
+
+    .legend-left { display: flex; align-items: center; gap: 0.4rem; }
+    .legend-gem  { width: 8px; height: 8px; }
+    .legend-name { color: var(--parchment); }
+    .legend-pct  { color: var(--parch-dim); }
+
+    /* ── BOOT ────────────────────────────── */
+    #boot {
+      position: fixed; inset: 0;
+      background: var(--dungeon);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 9999; gap: 1.2rem;
+      transition: opacity 0.4s;
+    }
+
+    .boot-logo { font-family: var(--font-pixel); font-size: 1.2rem; color: var(--gold-bright); animation: torch-flicker 1s ease-in-out infinite; letter-spacing: 0.2em; }
+    .boot-sub  { font-family: var(--font-rune); font-size: 1.3rem; color: var(--parch-dim); letter-spacing: 0.2em; }
+    .boot-track { width: 260px; height: 16px; background: var(--stone-light); box-shadow: 0 0 0 2px var(--gold-dark), 2px 2px 0 #000; }
+    .boot-fill  { height: 100%; background: repeating-linear-gradient(90deg, var(--gold) 0, var(--gold) 8px, rgba(0,0,0,0.3) 8px, rgba(0,0,0,0.3) 10px); animation: boot-bar 1.5s ease forwards; }
+    .boot-msg   { font-family: var(--font-pixel); font-size: 0.32rem; color: var(--torch); letter-spacing: 0.1em; }
+
+    @media (max-width: 800px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .summary-row { grid-template-columns: repeat(2,1fr); }
+      .cost-row { grid-template-columns: 1fr auto; }
+      .cost-notes { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="boot">
+  <div class="boot-logo">⚔ MetaSOC ⚔</div>
+  <div class="boot-sub">LIBRO DE CUENTAS DEL REINO</div>
+  <div class="boot-track"><div class="boot-fill"></div></div>
+  <div class="boot-msg">ABRIENDO LAS ARCAS...</div>
+</div>
+
+<header>
+  <div class="torch-icon">🔥</div>
+  <div class="header-title">
+    <div class="title-main">MetaSOC</div>
+    <div class="title-sub">TRANSPARENCIA DE COSTOS // OPERACIONES</div>
+  </div>
+  <a href="./index.html" class="back-btn">◀ VOLVER AL REINO</a>
+</header>
+
+<div class="page">
+
+  <!-- PAGE HEADER -->
+  <div class="page-hdr">
+    <div class="page-hdr-icon">📜</div>
+    <div>
+      <div class="page-title">LIBRO DE CUENTAS DEL REINO</div>
+      <div class="page-subtitle">DESGLOSE MENSUAL DE GASTOS OPERATIVOS</div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary-row">
+    <div class="sum-tablet" style="--tab-col:var(--torch)">
+      <div class="sum-ico">🪙</div>
+      <div class="sum-lbl">ORO GASTADO / MES ACTUAL</div>
+      <div class="sum-val" id="sum-current">—</div>
+      <div class="sum-sub" id="sum-current-lbl">cargando...</div>
+    </div>
+    <div class="sum-tablet" style="--tab-col:var(--gold)">
+      <div class="sum-ico">⚖</div>
+      <div class="sum-lbl">PROMEDIO MENSUAL</div>
+      <div class="sum-val" id="sum-avg">—</div>
+      <div class="sum-sub">últimos meses</div>
+    </div>
+    <div class="sum-tablet" style="--tab-col:var(--rune)">
+      <div class="sum-ico">🏰</div>
+      <div class="sum-lbl">INFRAESTRUCTURA</div>
+      <div class="sum-val">$0.00</div>
+      <div class="sum-sub">cloudflare + github gratis</div>
+    </div>
+    <div class="sum-tablet" style="--tab-col:var(--royal)">
+      <div class="sum-ico">💎</div>
+      <div class="sum-lbl">ACUMULADO TOTAL</div>
+      <div class="sum-val" id="sum-total">—</div>
+      <div class="sum-sub">desde el inicio</div>
+    </div>
+  </div>
+
+  <!-- MONTH TABS -->
+  <div class="month-tabs-wrap">
+    <span class="tabs-lbl">📅 MES:</span>
+    <div id="month-tabs" style="display:flex;gap:0.4rem;flex-wrap:wrap;"></div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- LEDGER -->
+    <div>
+      <div class="ledger">
+        <div class="ledger-hdr">
+          <div class="ledger-title" id="ledger-title">Desglose</div>
+          <div class="ledger-total" id="ledger-total">$0.00</div>
+        </div>
+        <div id="cost-rows"></div>
+      </div>
+
+      <div class="transparency">
+        <strong>// NOTA DE TRANSPARENCIA</strong><br><br>
+        MetaSOC opera con el principio de <strong>máxima eficiencia de costos</strong>. Toda la infraestructura corre en un notebook personal usando servicios gratuitos donde es posible. Publicamos estos números para demostrar que la ciberseguridad de calidad para PyMEs, educación y gobierno <strong>no requiere grandes inversiones</strong>.
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts-col">
+
+      <div class="chart-panel">
+        <div class="chart-hdr"><div class="chart-title">Evolución Mensual</div></div>
+        <div class="chart-body">
+          <div class="bar-list" id="monthly-bars"></div>
+        </div>
+      </div>
+
+      <div class="chart-panel">
+        <div class="chart-hdr"><div class="chart-title">Por Categoría</div></div>
+        <div class="pie-wrap">
+          <svg id="pie-svg" width="140" height="140" viewBox="0 0 140 140"></svg>
+          <div class="pie-legend" id="pie-legend"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA_URL = './data/costs.json';
+
+const CAT_CONFIG = {
+  infraestructura: { label:'Infraestructura', color:'#4499cc' },
+  herramientas:    { label:'Herramientas',    color:'#c8960c' },
+  operaciones:     { label:'Operaciones',     color:'#8855cc' },
+};
+
+let costData=null, activeMonth=null;
+
+const fmt = v => v===0 ? '$0.00' : '$'+v.toFixed(2);
+
+function monthTotal(m){ return m.items.reduce((s,i)=>s+i.amount,0); }
+
+function animateNum(el, target, pre='$', dec=2, dur=900){
+  const t0=Date.now();
+  const step=()=>{ const p=Math.min((Date.now()-t0)/dur,1), e=1-Math.pow(1-p,3);
+    el.textContent=pre+(target*e).toFixed(dec); if(p<1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+
+function renderSummary(){
+  const months=costData.monthly_costs;
+  const totals=months.map(monthTotal);
+  const acc=totals.reduce((s,v)=>s+v,0);
+  const avg=acc/totals.length;
+  const latest=months[months.length-1];
+
+  animateNum(document.getElementById('sum-current'), monthTotal(latest));
+  document.getElementById('sum-current-lbl').textContent=latest.label;
+  animateNum(document.getElementById('sum-avg'),     avg);
+  animateNum(document.getElementById('sum-total'),   acc);
+}
+
+function renderTabs(){
+  const container=document.getElementById('month-tabs');
+  costData.monthly_costs.forEach((m,i)=>{
+    const btn=document.createElement('button');
+    btn.className='month-tab'+(i===costData.monthly_costs.length-1?' active':'');
+    btn.textContent=m.label;
+    btn.dataset.idx=i;
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.month-tab').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      activeMonth=parseInt(btn.dataset.idx);
+      renderLedger(); renderBarChart(); renderPie();
+    });
+    container.appendChild(btn);
+  });
+  activeMonth=costData.monthly_costs.length-1;
+}
+
+function renderLedger(){
+  const month=costData.monthly_costs[activeMonth];
+  const total=monthTotal(month);
+
+  document.getElementById('ledger-total').textContent=fmt(total);
+
+  // Trend
+  let trendHtml='';
+  if(activeMonth>0){
+    const prev=monthTotal(costData.monthly_costs[activeMonth-1]);
+    const diff=total-prev;
+    if(Math.abs(diff)<0.01) trendHtml='<span class="trend-badge trend-same">= IGUAL</span>';
+    else if(diff>0) trendHtml=`<span class="trend-badge trend-up">▲ +${fmt(diff)}</span>`;
+    else trendHtml=`<span class="trend-badge trend-down">▼ ${fmt(diff)}</span>`;
+  }
+
+  const titleEl=document.getElementById('ledger-title');
+  titleEl.innerHTML=`<span style="display:flex;align-items:center;gap:8px">
+    <span style="display:inline-block;width:8px;height:8px;background:var(--gold);box-shadow:0 0 6px var(--gold)"></span>
+    ${month.label} ${trendHtml}
+  </span>`;
+
+  // Group by category
+  const grouped={};
+  month.items.forEach(item=>{
+    if(!grouped[item.category]) grouped[item.category]=[];
+    grouped[item.category].push(item);
+  });
+
+  const container=document.getElementById('cost-rows');
+  container.innerHTML='';
+
+  Object.entries(grouped).forEach(([cat,items])=>{
+    const cfg=CAT_CONFIG[cat]||{label:cat,color:'#d4b896'};
+    const sub=items.reduce((s,i)=>s+i.amount,0);
+
+    const sec=document.createElement('div');
+    sec.innerHTML=`
+      <div class="cat-hdr">
+        <span class="cat-name" style="color:${cfg.color}">${cfg.label.toUpperCase()}</span>
+        <span class="cat-sub">${fmt(sub)}</span>
+      </div>
+      ${items.map(item=>`
+        <div class="cost-row">
+          <span class="cost-name">${item.name}</span>
+          <span class="cost-amount ${item.amount===0?'amount-zero':'amount-paid'}">${fmt(item.amount)}</span>
+          <span class="cost-notes">${item.notes}</span>
+        </div>
+      `).join('')}
+    `;
+    container.appendChild(sec);
+  });
+}
+
+function renderBarChart(){
+  const months=costData.monthly_costs;
+  const totals=months.map(monthTotal);
+  const max=Math.max(...totals,1);
+
+  document.getElementById('monthly-bars').innerHTML=months.map((m,i)=>{
+    const pct=(totals[i]/max*100).toFixed(1);
+    const isActive=i===activeMonth;
+    const col=isActive?'var(--torch)':'var(--gold-dark)';
+    return `<div class="bar-entry" onclick="setMonth(${i})">
+      <div class="bar-meta">
+        <span class="bar-month" style="color:${isActive?'var(--gold-bright)':'var(--parchment)'}">${m.label}</span>
+        <span class="bar-val">${fmt(totals[i])}</span>
+      </div>
+      <div class="px-bar-track">
+        <div class="px-bar-fill" style="width:${pct}%;--fill-col:${col}"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setMonth(idx){
+  activeMonth=idx;
+  document.querySelectorAll('.month-tab').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  renderLedger(); renderBarChart(); renderPie();
+}
+
+function renderPie(){
+  const month=costData.monthly_costs[activeMonth];
+  const total=monthTotal(month);
+  const grouped={};
+  month.items.forEach(item=>{ grouped[item.category]=(grouped[item.category]||0)+item.amount; });
+
+  const svg=document.getElementById('pie-svg');
+  const legend=document.getElementById('pie-legend');
+
+  const colors=['#4499cc','#c8960c','#8855cc','#00cc66','#e8621a'];
+
+  if(total===0){
+    svg.innerHTML=`<circle cx="70" cy="70" r="54" fill="none" stroke="#2c2520" stroke-width="16"/>
+      <text x="70" y="74" text-anchor="middle" font-family="'VT323',monospace" font-size="12" fill="#7a6548">$0.00</text>`;
+    legend.innerHTML=`<div style="font-family:var(--font-rune);font-size:0.9rem;color:var(--parch-dim);text-align:center">Sin gastos</div>`;
+    return;
+  }
+
+  const entries=Object.entries(grouped).filter(([,v])=>v>0);
+  let startAngle=-Math.PI/2, paths='';
+
+  entries.forEach(([cat,val],i)=>{
+    const angle=(val/total)*2*Math.PI;
+    const endAngle=startAngle+angle;
+    const cx=70,cy=70,r=54;
+    const x1=cx+r*Math.cos(startAngle), y1=cy+r*Math.sin(startAngle);
+    const x2=cx+r*Math.cos(endAngle),   y2=cy+r*Math.sin(endAngle);
+    const large=angle>Math.PI?1:0;
+    const color=colors[i%colors.length];
+    paths+=`<path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z" fill="${color}" opacity="0.85" stroke="#080608" stroke-width="2"/>`;
+    startAngle=endAngle;
+  });
+
+  paths+=`<rect x="16" y="16" width="108" height="108" fill="none" stroke="#7a5a08" stroke-width="1"/>`;
+  paths+=`<circle cx="70" cy="70" r="32" fill="#080608" stroke="#7a5a08" stroke-width="1"/>`;
+  paths+=`<text x="70" y="66" text-anchor="middle" font-family="'Press Start 2P',monospace" font-size="5" fill="#7a6548">TOTAL</text>`;
+  paths+=`<text x="70" y="78" text-anchor="middle" font-family="'VT323',monospace" font-size="11" fill="#d4b896">${fmt(total)}</text>`;
+
+  svg.innerHTML=paths;
+
+  legend.innerHTML=entries.map(([cat,val],i)=>{
+    const cfg=CAT_CONFIG[cat]||{label:cat};
+    const pct=((val/total)*100).toFixed(0);
+    return `<div class="legend-row">
+      <div class="legend-left">
+        <div class="legend-gem" style="background:${colors[i%colors.length]};box-shadow:0 0 4px ${colors[i%colors.length]}"></div>
+        <span class="legend-name">${cfg.label}</span>
+      </div>
+      <span class="legend-pct">${fmt(val)} (${pct}%)</span>
+    </div>`;
+  }).join('');
+}
+
+async function init(){
+  const res=await fetch(DATA_URL); costData=await res.json();
+  renderSummary(); renderTabs(); renderLedger(); renderBarChart(); renderPie();
+  setTimeout(()=>{ const el=document.getElementById('boot'); el.style.opacity='0'; setTimeout(()=>el.remove(),400); },1500);
+}
+
+window.addEventListener('load',init);
+</script>
+</body>
+</html>

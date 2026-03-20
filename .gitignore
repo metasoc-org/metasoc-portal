@@ -1,0 +1,17 @@
+# Scripts locales — solo para el notebook, nunca a GitHub
+scripts/
+README.md
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# Editor
+.vscode/
+.idea/
